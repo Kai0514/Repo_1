@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>十字路口紅綠燈模擬</title>
+  <style>
+    .traffic-light {
+      width: 60px;
+      height: 180px;
+      background-color: #333;
+      border-radius: 15px;
+      padding: 10px;
+      margin: 10px;
+    }
+    .light {
+      width: 50px;
+      height: 50px;
+      background-color: gray;
+      border-radius: 50%;
+      margin: 10px auto;
+    }
+    .red { background-color: red; }
+    .yellow { background-color: yellow; }
+    .green { background-color: green; }
+    .crossroad {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .direction {
+      margin: 10px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>十字路口紅綠燈模擬</h1>
+
+  <div class="crossroad"> <!-- 十字路口設計 -->
+    <div class="direction" id="north">
+      <div class="traffic-light">
+        <div class="light red" id="north-red"></div>
+        <div class="light" id="north-yellow"></div>
+        <div class="light" id="north-green"></div>
+      </div>
+      <p>北</p>
+    </div>
+
+    <div class="direction" id="south">
+      <div class="traffic-light">
+        <div class="light red" id="south-red"></div>
+        <div class="light" id="south-yellow"></div>
+        <div class="light" id="south-green"></div>
+      </div>
+      <p>南</p>
+    </div>
+
+    <div class="direction" id="east">
+      <div class="traffic-light">
+        <div class="light red" id="east-red"></div>
+        <div class="light" id="east-yellow"></div>
+        <div class="light" id="east-green"></div>
+      </div>
+      <p>東</p>
+    </div>
+
+    <div class="direction" id="west">
+      <div class="traffic-light">
+        <div class="light red" id="west-red"></div>
+        <div class="light" id="west-yellow"></div>
+        <div class="light" id="west-green"></div>
+      </div>
+      <p>西</p>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="traffic.js"></script>
+  <script>
+    $(document).ready(function() {
+  let nsGreenTime = 10000; // 南北方向綠燈 10 秒
+  let ewGreenTime = 10000; // 東西方向綠燈 10 秒
+  let yellowTime = 3000;   // 黃燈 3 秒
+
+  function setLightState(direction, redOn, yellowOn, greenOn) {
+    $(`#${direction}-red`).removeClass('red'); // 重置當前方向的燈號顏色
+    $(`#${direction}-yellow`).removeClass('yellow');
+    $(`#${direction}-green`).removeClass('green');
+
+    // 根據狀態參數添加顏色
+    if (redOn) {
+      $(`#${direction}-red`).addClass('red');
+    }
+    if (yellowOn) {
+      $(`#${direction}-yellow`).addClass('yellow');
+    }
+    if (greenOn) {
+      $(`#${direction}-green`).addClass('green');
+    }
+  }
+
+  function startTrafficCycle() {
+    console.log('開始南北方向綠燈');
+
+    // 南北方向綠燈階段，東西方向紅燈
+    setLightState('north', false, false, true); // 北綠燈
+    setLightState('south', false, false, true); // 南綠燈
+    setLightState('east', true, false, false);  // 東紅燈
+    setLightState('west', true, false, false);  // 西紅燈
+    
+    setTimeout(function() {
+      console.log('南北方向黃燈階段');
+
+      // 南北方向黃燈階段
+      setLightState('north', false, true, false);
+      setLightState('south', false, true, false);
+      
+      setTimeout(function() {
+        console.log('東西方向綠燈階段');
+
+        // 南北方向紅燈，東西方向綠燈
+        setLightState('north', true, false, false);
+        setLightState('south', true, false, false);
+        setLightState('east', false, false, true);  // 東綠燈
+        setLightState('west', false, false, true);  // 西綠燈
+
+        setTimeout(function() {
+          console.log('東西方向黃燈階段');
+
+          setLightState('east', false, true, false); // 東西方向黃燈階段
+          setLightState('west', false, true, false);
+
+          setTimeout(startTrafficCycle, yellowTime); // 循環重新開始
+        }, ewGreenTime);
+      }, yellowTime);
+    }, nsGreenTime);
+  }
+
+  setLightState('north', true, false, false); // 將所有方向的燈號的初始狀態設為紅燈
+  setLightState('south', true, false, false);
+  setLightState('east', true, false, false);
+  setLightState('west', true, false, false);
+
+  startTrafficCycle(); // 紅綠燈運轉開始
+});
+  </script>
+</body>
+</html>

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="/Second_Week/style_.css" rel="stylesheet" type="text/css">
+    <title>This is Zhe-Kai's Introduce - 興趣愛好</title>
+    <style>
+      
+    *{margin: 0;padding: 0;box-sizing: border-box;}
+
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+
+    .container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 20px;
+      padding: 20px;
+    }
+
+    .Main_Block1,.Main_Block2 ,.Main_Block4 {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #ccc;
+      padding: 10px;
+      transition: transform 0.3s ease;
+    }
+
+    .Main_Block1 img, .Main_Block4 img {
+      width: 100%;
+      max-width: 200px;
+      height: auto;
+      margin-bottom: 10px;
+    }
+
+    .Main_Block1:hover, .Main_Block4:hover {
+      transform: scale(1.05);
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    </style>
+  </head>
+  <body>
+    <div class="Other_link">
+      <nav>
+        <a href="/Second_Week/Self_Introduce.html">個人主頁</a>
+        <a href="/Second_Week/Interest.html">興趣愛好</a>
+        <a href="/Second_Week/photo.html">照片集</a>
+      </nav>
+    </div>
+
+    <div class="container">
+      <div class="Main_Block" style="grid-template-columns: repeat(3, 1fr);">
+        <div class="Main_Block2">
+          <h2>音樂</h2>
+        </div>
+        <div class="Main_Block2">
+          <h2>遊戲</h2>
+        </div>
+        <div class="Main_Block2">
+          <h2>動漫</h2>
+        </div>
+
+        <div class="Main_Block1">
+          <h4>IU</h4>
+          <a href="https://www.youtube.com/channel/UC3SyT4_WLHzN7JmHQwKQZww">
+            <img src="/Second_Week/IU.jpg">
+          </a>
+          <ul>
+            <li>韓國女歌手</li>
+            <li>推薦歌曲
+              <ul>
+                <li>
+                  <a href="https://youtu.be/JleoAppaxi0?si=vZR1glLNyigjPhAj">Love Wins All</a>
+                </li>
+                <li>
+                  <a href="https://youtu.be/BzYnNdJhZQw?si=SBIoVXzCVa3O6jUu">Through the night</a>
+                </li>
+                <li>
+                  <a href="https://youtu.be/TgOu00Mf3kI?si=6LwN1xVJ5eTgpWwL">Eight</a>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+
+        <div class="Main_Block4">
+          <a href="https://www.crunchyroll.com">
+            <img src="/Second_Week/anime.jpg" alt="動漫圖片">
+          </a>
+          <ul>
+            <li>動漫類型</li>
+            <li>推薦原因
+              <ul>原因一</ul>
+              <ul>原因二</ul>
+            </li>
+          </ul>
+        </div>
+
+        <div class="Main_Block4">
+          <a href="https://www.steampowered.com">
+            <img src="/Second_Week/games.jpg" alt="遊戲圖片">
+          </a>
+          <ul></ul>
+            <li>遊戲類型</li>
+            <li>推薦原因
+              <ul>原因一</ul>
+              <ul>原因二</ul>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>臺北市犯罪數據分析</title>
+    <link rel="stylesheet" href="analysis_style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/zh-tw.js"></script>
+</head>
+<body>
+    <div class="header">
+        <h1>臺北市犯罪數據分析</h1>
+        <div class="theme-toggle-container">
+            <button id="theme-toggle" class="theme-toggle-btn">切換模式</button>
+        </div>
+        
+    </div>
+    <div class="container">
+        <div class="return-button-container">
+            <button onclick="window.location.href='index.html'" class="return-btn">
+                <span class="icon">←</span>
+                返回首頁
+            </button>
+        </div>
+        
+        <!-- 篩選區塊 -->
+        <section class="section">
+            <h2>數據篩選</h2>
+            <div class="filter-section">
+                <!-- 時間選擇 -->
+                <div class="filter-item">
+                    <label>時間範圍</label>
+                    <div class="date-inputs">
+                        <div class="date-input">
+                            <label>起始：</label>
+                            <input type="text" id="start-date" class="date-picker">
+                        </div>
+                        <div class="date-input">
+                            <label>結束：</label>
+                            <input type="text" id="end-date" class="date-picker">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 犯罪類型選擇 -->
+                <div class="filter-item">
+                    <label>犯罪類型</label>
+                    <div id="crime-type-buttons" class="button-toggle-group">
+                        <!-- 按鈕會由 JS 動態生成 -->
+                    </div>
+                </div>
+
+                <!-- 行政區選擇 -->
+                <div class="filter-item">
+                    <label>行政區</label>
+                    <div id="district-buttons" class="button-toggle-group">
+                        <!-- 按鈕會由 JS 動態生成 -->
+                    </div>
+                </div>
+
+                <!-- 下載按鈕群組 -->
+                <div class="action-buttons">
+                    <button id="download-chart" class="secondary-btn">
+                        <span class="icon">📊</span>
+                        下載圖表
+                    </button>
+                    <button id="download-geojson" class="secondary-btn">
+                        <span class="icon">📁</span>
+                        下載成csv
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 分析結果區塊 -->
+        <section class="section">
+            <h2>數據視覺化</h2>
+            <div class="analysis-container">
+                <!-- 統計摘要 -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-title">總案件數</div>
+                        <div class="stat-value" id="total-cases">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">平均每月案件</div>
+                        <div class="stat-value" id="avg-monthly-cases">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">最高發生區域</div>
+                        <div class="stat-value" id="top-district">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">主要犯罪類型</div>
+                        <div class="stat-value" id="top-crime-type">-</div>
+                    </div>
+                </div>
+
+                <!-- 時間序列圖表 -->
+                <div class="chart-container">
+                    <canvas id="timeSeriesChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- 數據表格區塊 -->
+        <section class="section">
+            <h2>詳細數據</h2>
+            <div class="table-container">
+                <table id="dataTable">
+                    <thead>
+                        <tr>
+                            <th>時間</th>
+                            <th>行政區</th>
+                            <th>犯罪類型</th>
+                            <th>案件數</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- 表格數據會由 JS 填充 -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <script src="analysis.js"></script>
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>臺北市犯罪熱度圖</title>
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.11.0/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.11.0/mapbox-gl.css' rel='stylesheet' />
+    <link href='styles.css' rel='stylesheet' />
+</head>
+<body class="theme-dark">
+
+    <header class="header">
+        <h1>臺北市犯罪熱度圖</h1>
+    </header>
+    <div class="content-container">
+        <div class="sidebar">
+            <div id="crime-count"></div>
+            
+            <div class="control-group">
+                <label for="district-select">選擇區域:</label>
+                <select id="district-select">
+                    <option value="all">所有區域</option>
+                    <option value="中正區">中正區</option>
+                    <option value="大同區">大同區</option>
+                    <option value="中山區">中山區</option>
+                    <option value="松山區">松山區</option>
+                    <option value="大安區">大安區</option>
+                    <option value="萬華區">萬華區</option>
+                    <option value="信義區">信義區</option>
+                    <option value="士林區">士林區</option>
+                    <option value="北投區">北投區</option>
+                    <option value="內湖區">內湖區</option>
+                    <option value="南港區">南港區</option>
+                    <option value="文山區">文山區</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label for="crime-type-select">犯罪類型:</label>
+                <select id="crime-type-select">
+                    <option value="all">所有類型</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="time-range">時間範圍:</label>
+                <div class="year-display">
+                    <span id="year-value">2014</span>年
+                </div>
+                <input type="range" id="time-range" min="2014" max="2023" value="2014" step="1">
+            </div>
+            
+            <div class="control-group">
+                <label for="heatmap-radius">熱力圖半徑 (公尺): <span id="radius-value">200</span></label>
+                <input type="range" id="heatmap-radius" min="50" max="1000" step="50" value="200">
+            </div>
+            
+            <div class="control-group">
+                <label for="heatmap-intensity">熱力圖強度: <span id="intensity-value">1.0</span></label>
+                <input type="range" id="heatmap-intensity" min="0" max="3" step="0.1" value="1">
+            </div>
+            
+            <div class="control-group">
+                <label for="heatmap-opacity">不透明度: <span id="opacity-value">0.7</span></label>
+                <input type="range" id="heatmap-opacity" min="0" max="1" step="0.1" value="0.7">
+            </div>
+
+            <div class="bottom-button-container">
+                <button class="nav-button-statistics" onclick="window.location.href='interact.html'">環域分析<br>互動地圖</button>
+                <button class="nav-button-interact" onclick="window.location.href='analysis.html'">犯罪統計<br>分析工具</button>
+            </div>
+        </div>
+        <div class="map-container">
+            <div id="map">
+                <div id="theme-toggle-container">
+                    <button id="theme-toggle" class="theme-button">切換淺色主題</button>
+                </div>
+                <div id="legend" class="map-legend"></div>
+            </div>
+        </div>
+    </div>
+    <script src="main.js"></script>
+</body>
+</html>

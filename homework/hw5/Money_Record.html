@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>記帳工具</title>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+/* ===== 全域 ===== */
+body {
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: linear-gradient(135deg,#eef2f7,#f9fbfd);
+  margin: 0;
+  padding: 20px;
+}
+
+/* ===== 標題 ===== */
+h1 {
+  text-align: center;
+  background: linear-gradient(90deg,#4facfe,#00f2fe);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: 2.2rem;
+  margin-bottom: 30px;
+}
+
+/* ===== 卡片容器 ===== */
+.card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+  margin-bottom: 20px;
+}
+
+/* ===== 表單 ===== */
+form label {
+  font-weight: 600;
+}
+
+form input, form select {
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  transition: 0.2s;
+}
+
+form input:focus, form select:focus {
+  border-color: #4facfe;
+  outline: none;
+  box-shadow: 0 0 5px rgba(79,172,254,0.5);
+}
+
+/* ===== 按鈕 ===== */
+button {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(90deg,#4facfe,#00f2fe);
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.25s;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 12px rgba(0,0,0,0.15);
+}
+
+/* 次按鈕 */
+.secondary-btn {
+  background: linear-gradient(90deg,#43e97b,#38f9d7);
+}
+
+/* ===== 表格 ===== */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+th {
+  background: #4facfe;
+  color: white;
+  padding: 12px;
+}
+
+td {
+  padding: 10px;
+  text-align: center;
+}
+
+tr:nth-child(even) {
+  background: #f4f8fc;
+}
+
+tr:hover {
+  background: #eaf4ff;
+}
+
+/* ===== 刪除鍵 ===== */
+.delete-btn {
+  color: #ff4d4f;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.delete-btn:hover {
+  color: #d9363e;
+}
+
+/* ===== 按鈕群組 ===== */
+.button-group {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+/* ===== 圖表 ===== */
+#chartContainer {
+  margin-top: 20px;
+}
+
+/* ===== 響應式 ===== */
+@media (max-width: 768px) {
+  .button-group {
+    flex-direction: column;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<h1>💰 記帳工具 Dashboard</h1>
+
+<!-- ===== 表單卡片 ===== -->
+<div class="card">
+  <h2>新增記錄</h2>
+
+  <form id="transactionForm">
+    <label>描述</label>
+    <input type="text" id="description" required>
+
+    <label>日期</label>
+    <input type="date" id="date" required>
+
+    <label>金額</label>
+    <input type="number" id="amount" step="0.01" required>
+
+    <label>類型</label>
+    <select id="type" required>
+      <option value="收入">收入</option>
+      <option value="支出">支出</option>
+    </select>
+
+    <button type="submit">＋ 新增記錄</button>
+  </form>
+</div>
+
+<!-- ===== 表格卡片 ===== -->
+<div class="card">
+  <h2>記錄表</h2>
+
+  <table id="tableData">
+    <thead>
+      <tr>
+        <th>描述</th>
+        <th>日期</th>
+        <th>金額</th>
+        <th>類型</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <div class="button-group">
+    <button id="saveToDb">儲存至資料庫</button>
+    <button id="loadFromDb" class="secondary-btn">從資料庫載入</button>
+    <button id="downloadJson">下載JSON</button>
+    <input type="file" id="uploadJson" accept=".json">
+  </div>
+</div>
+
+<!-- ===== 圖表卡片 ===== -->
+<div class="card" id="chartContainer">
+  <h2>每日金額變化</h2>
+  <canvas id="dataChart"></canvas>
+</div>
+
+<script>
+$(document).ready(function() {
+
+let transactions = [];
+
+let ctx = $('#dataChart');
+let dataChart = new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: [],
+    datasets: [{
+      label: '每日總金額',
+      data: [],
+      borderColor: '#4facfe',
+      backgroundColor: 'rgba(79,172,254,0.2)',
+      fill: true,
+      tension: 0.3
+    }]
+  },
+  options: {
+    scales: { y: { beginAtZero: true } }
+  }
+});
+
+/* ===== 更新圖表 ===== */
+function updateChart() {
+  let dateSums = {};
+
+  transactions.forEach(entry => {
+    let amount = entry.type === '收入'
+      ? entry.amount
+      : -entry.amount;
+
+    dateSums[entry.date] =
+      (dateSums[entry.date] || 0) + amount;
+  });
+
+  let dates = Object.keys(dateSums).sort();
+  let amounts = dates.map(d => dateSums[d]);
+
+  dataChart.data.labels = dates;
+  dataChart.data.datasets[0].data = amounts;
+  dataChart.update();
+}
+
+/* ===== 載入表格 ===== */
+function loadTableData() {
+  $('#tableData tbody').empty();
+
+  transactions.forEach(entry => {
+    let row = `
+      <tr>
+        <td>${entry.description}</td>
+        <td>${entry.date}</td>
+        <td>${entry.amount}</td>
+        <td>${entry.type}</td>
+        <td><span class="delete-btn">刪除</span></td>
+      </tr>`;
+
+    $('#tableData tbody').append(row);
+  });
+
+  updateChart();
+}
+
+/* ===== 新增 ===== */
+$('#transactionForm').on('submit', function(e) {
+  e.preventDefault();
+
+  let description = $('#description').val();
+  let date = $('#date').val();
+  let amount = $('#amount').val();
+  let type = $('#type').val();
+
+  transactions.push({
+    description,
+    date,
+    amount: parseFloat(amount),
+    type
+  });
+
+  loadTableData();
+  this.reset();
+});
+
+/* ===== 刪除 ===== */
+$('#tableData').on('click', '.delete-btn', function() {
+  let index = $(this).closest('tr').index();
+  transactions.splice(index, 1);
+  loadTableData();
+});
+
+/* ===== 存 DB ===== */
+$('#saveToDb').click(function() {
+  $.ajax({
+    url: 'save_to_db.php',
+    method: 'POST',
+    contentType: 'application/json',
+    data: JSON.stringify(transactions),
+    success: res => alert(res),
+    error: () => alert('儲存失敗')
+  });
+});
+
+/* ===== 載 DB ===== */
+$('#loadFromDb').click(function() {
+  $.get('load_from_db.php', function(res) {
+    transactions = JSON.parse(res);
+    loadTableData();
+  });
+});
+
+/* ===== 下載 JSON ===== */
+$('#downloadJson').click(function() {
+  let blob = new Blob(
+    [JSON.stringify(transactions,null,2)],
+    {type:'application/json'}
+  );
+
+  let url = URL.createObjectURL(blob);
+  let a = document.createElement('a');
+  a.href = url;
+  a.download = 'transactions.json';
+  a.click();
+});
+
+/* ===== 上傳 JSON ===== */
+$('#uploadJson').change(function() {
+  let reader = new FileReader();
+  reader.onload = e => {
+    transactions = JSON.parse(e.target.result);
+    loadTableData();
+  };
+  reader.readAsText(this.files[0]);
+});
+
+});
+</script>
+
+</body>
+</html>

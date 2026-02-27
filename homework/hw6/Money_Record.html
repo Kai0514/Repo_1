@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>記帳工具</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    #data-table { margin-top: 20px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 10px; border: 1px solid #ccc; }
+    th { background-color: #f4f4f4; }
+    .delete-btn { color: red; cursor: pointer; }
+    #chartContainer { margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h1>記帳工具</h1>
+
+  <form id="transactionForm">
+    <label for="description">描述：</label>
+    <input type="text" id="description" name="description" required><br><br>
+
+    <label for="date">日期：</label>
+    <input type="date" id="date" name="date" required><br><br>
+
+    <label for="amount">金額：</label>
+    <input type="number" id="amount" name="amount" step="0.01" required><br><br>
+
+    <label for="type">類型：</label>
+    <select id="type" name="type" required>
+      <option value="收入">收入</option>
+      <option value="支出">支出</option>
+    </select><br><br>
+
+    <button type="submit">新增記錄</button>
+  </form>
+
+  <div id="data-table">
+    <h2>記錄表</h2>
+    <table id="tableData">
+      <thead>
+        <tr>
+          <th>描述</th>
+          <th>日期</th>
+          <th>金額</th>
+          <th>類型</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div>
+    <button id="saveToDb">儲存至資料庫</button>
+    <button id="loadFromDb">從資料庫載入</button>
+    <button id="downloadJson">下載JSON</button>
+    <input type="file" id="uploadJson" accept=".json">
+  </div>
+
+  <div id="chartContainer">
+    <h2>每日金額變化</h2>
+    <canvas id="dataChart"></canvas>
+  </div>
+
+  <script>
+  $(document).ready(function() {
+    let transactions = [];
+    let ctx = $('#dataChart');
+    let dataChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [{
+          label: '每日總金額',
+          data: [],
+          borderColor: 'rgba(75, 192, 192, 1)',
+          backgroundColor: 'rgba(75, 192, 192, 0.2)',
+          fill: true,
+          tension: 0.1
+        }]
+      },
+      options: { scales: { y: { beginAtZero: true } } }
+    });
+
+    function updateChart() {
+      let dateSums = {};
+      transactions.forEach(entry => {
+        let amount = entry.type === '收入' ? entry.amount : -entry.amount;
+        dateSums[entry.date] = (dateSums[entry.date] || 0) + amount;
+      });
+
+      let dates = Object.keys(dateSums).sort();
+      let amounts = dates.map(date => dateSums[date]);
+
+      dataChart.data.labels = dates;
+      dataChart.data.datasets[0].data = amounts;
+      dataChart.update();
+    }
+
+    function loadTableData() {
+      $('#tableData tbody').empty();
+      transactions.forEach(entry => {
+        let row = `<tr>
+          <td>${entry.description}</td>
+          <td>${entry.date}</td>
+          <td>${entry.amount}</td>
+          <td>${entry.type}</td>
+          <td><span class="delete-btn">刪除</span></td>
+        </tr>`;
+        $('#tableData tbody').append(row);
+      });
+      updateChart();
+    }
+
+    $('#transactionForm').on('submit', function(e) {
+      e.preventDefault();
+      let description = $('#description').val();
+      let date = $('#date').val();
+      let amount = $('#amount').val();
+      let type = $('#type').val();
+      if (description && date && amount && type) {
+        transactions.push({ description, date, amount: parseFloat(amount), type });
+        loadTableData();
+        $('#description').val('');
+        $('#date').val('');
+        $('#amount').val('');
+      }
+    });
+
+    $('#tableData').on('click', '.delete-btn', function() {
+      let rowIndex = $(this).closest('tr').index();
+      transactions.splice(rowIndex, 1);
+      loadTableData();
+    });
+
+    $('#saveToDb').on('click', function() {
+      $.ajax({
+        url: 'save_to_db.php',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(transactions),
+        success: function(response) {
+          alert(response);
+        },
+        error: function() {
+          alert('儲存失敗！');
+        }
+      });
+    });
+
+    $('#loadFromDb').on('click', function() {
+      $.ajax({
+        url: 'load_from_db.php',
+        method: 'GET',
+        success: function(response) {
+          transactions = JSON.parse(response);
+          loadTableData();
+        },
+        error: function() {
+          alert('載入失敗！');
+        }
+      });
+    });
+
+    $('#downloadJson').on('click', function() {
+      let jsonData = JSON.stringify(transactions, null, 2);
+      let blob = new Blob([jsonData], { type: 'application/json' });
+      let url = URL.createObjectURL(blob);
+      let a = document.createElement('a');
+      a.href = url;
+      a.download = 'transactions.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    });
+
+    $('#uploadJson').on('change', function() {
+      let file = this.files[0];
+      if (file) {
+        let reader = new FileReader();
+        reader.onload = function(e) {
+          transactions = JSON.parse(e.target.result);
+          loadTableData();
+        };
+        reader.readAsText(file);
+      }
+    });
+  });
+  </script>
+</body>
+</html>

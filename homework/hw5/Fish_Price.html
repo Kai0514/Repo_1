@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>記帳工具</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    padding: 20px;
+    }
+
+    #filters {
+        margin-bottom: 20px;
+    }
+
+    label {
+        margin-right: 10px;
+    }
+
+    select {
+        margin-right: 20px;
+    }
+  </style>
+</head>
+<body>
+    <h1>魚貨交易統計分析</h1>
+    <div id="filters">
+        <label for="fish-type">選擇魚種：</label>
+        <select id="fish-type">
+            <option value="" disabled selected>請選擇魚種</option>
+        </select>
+        
+        <label for="market">選擇市場：</label>
+        <select id="market">
+            <option value="" disabled selected>請選擇市場</option>
+        </select>
+    </div>
+    <div id="statistics">
+        <h2>統計資訊</h2>
+        <p id="stats-summary">請選擇篩選條件。</p>
+    </div>
+    <div id="charts">
+        <canvas id="trend-chart" width="800" height="400"></canvas>
+    </div>
+ 
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const fishTypeSelect = document.getElementById('fish-type');
+      const marketSelect = document.getElementById('market');
+      const statsSummary = document.getElementById('stats-summary');
+      const trendChartCtx = document.getElementById('trend-chart').getContext('2d');
+
+      // Initialize global variables
+      let rawData = [];
+      let chartInstance = null;
+
+      // Load data using AJAX
+      fetch('fish.json')
+          .then(response => response.json())
+          .then(data => {
+              rawData = data;
+              populateFilters();
+          });
+
+      // Populate filters dynamically
+      function populateFilters() {
+          const fishTypes = [...new Set(rawData.map(item => item['魚貨名稱']))];
+          const markets = [...new Set(rawData.map(item => item['市場名稱']))];
+
+          fishTypes.forEach(fish => {
+              const option = document.createElement('option');
+              option.value = fish;
+              option.textContent = fish;
+              fishTypeSelect.appendChild(option);
+          });
+
+          markets.forEach(market => {
+              const option = document.createElement('option');
+              option.value = market;
+              option.textContent = market;
+              marketSelect.appendChild(option);
+          });
+      }
+
+      // Filter and display data
+      function updateDisplay() {
+          const selectedFish = fishTypeSelect.value;
+          const selectedMarket = marketSelect.value;
+
+          const filteredData = rawData.filter(item =>
+              item['魚貨名稱'] === selectedFish &&
+              item['市場名稱'] === selectedMarket
+          );
+
+          if (filteredData.length > 0) {
+              const volumes = filteredData.map(item => parseFloat(item['交易量']));
+              const prices = filteredData.map(item => parseFloat(item['平均價']));
+              const dates = filteredData.map(item => item['交易日期']);
+
+              const avgVolume = (volumes.reduce((a, b) => a + b, 0) / volumes.length).toFixed(2);
+              const avgPrice = (prices.reduce((a, b) => a + b, 0) / prices.length).toFixed(2);
+
+              statsSummary.textContent = `平均交易量：${avgVolume}，平均價格：${avgPrice}`;
+
+              if (chartInstance) chartInstance.destroy();
+              chartInstance = new Chart(trendChartCtx, {
+                  type: 'line',
+                  data: {
+                      labels: dates,
+                      datasets: [
+                          {
+                              label: '交易量',
+                              data: volumes,
+                              borderColor: 'blue',
+                              fill: false,
+                          },
+                          {
+                              label: '平均價格',
+                              data: prices,
+                              borderColor: 'green',
+                              fill: false,
+                          },
+                      ],
+                  },
+              });
+          } else {
+              statsSummary.textContent = '無相關數據。';
+          }
+      }
+
+      // Event listeners for filters
+      fishTypeSelect.addEventListener('change', updateDisplay);
+      marketSelect.addEventListener('change', updateDisplay);
+    });
+  </script>
+</body>

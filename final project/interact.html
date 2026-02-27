@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>臺北市犯罪互動分析</title>
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.11.0/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.11.0/mapbox-gl.css" rel="stylesheet" />
+    <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+    <link href="styles.css" rel="stylesheet" />
+</head>
+<body class="theme-dark">
+    <header class="header">
+        <h1>臺北市犯罪環域分析 互動地圖</h1>
+    </header>
+    <div class="content-container">
+        <div class="sidebar">
+            <div id="analysis-form" class="control-group">
+                <h3>環域分析</h3>
+                
+                <div class="control-group">
+                    <label for="input-year">年份:</label>
+                    <input type="number" id="input-year" min="2014" max="2023" value="2023" class="form-input">
+                </div>
+                
+                <div class="control-group">
+                    <label for="input-lat">緯度:</label>
+                    <input type="number" id="input-lat" step="0.0001" value="25.0330" class="form-input">
+                </div>
+                
+                <div class="control-group">
+                    <label for="input-lng">經度:</label>
+                    <input type="number" id="input-lng" step="0.0001" value="121.5654" class="form-input">
+                </div>
+                
+                <div class="control-group">
+                    <label for="input-radius">半徑 (公尺):</label>
+                    <input type="number" id="input-radius" min="100" max="5000" value="500" class="form-input">
+                </div>
+                
+                <button id="analyze-button" class="nav-button">開始分析</button>
+            </div>
+            
+            <div id="analysis-result" class="control-group">
+                <h3>分析結果</h3>
+                <div id="result-content">
+                    尚未進行分析
+                </div>
+            </div>
+
+            <button id="nav-button" onclick="window.location.href='index.html'">
+                <span class="icon">←</span>
+                返回首頁
+            </button>
+            
+        </div>
+        <div class="map-container">
+            <div id="map">
+                <div id="theme-toggle-container">
+                    <button id="theme-toggle" class="theme-button">切換淺色主題</button>
+                </div>
+                <div id="legend" class="map-legend"></div>
+            </div>
+        </div>
+    </div>
+    <script src="interact.js"></script>
+</body>
+</html>
