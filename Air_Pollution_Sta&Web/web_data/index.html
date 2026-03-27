@@ -7,58 +7,152 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --primary: #3498db; --dark: #2c3e50; --light: #f5f7fa; --card-bg: #ffffff; }
-        body, html { margin: 0; height: 100%; font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif; background: var(--light); overflow: hidden; }
-
-        .app-wrapper { display: flex; flex-direction: column; height: 100vh; }
-        header { 
-            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); 
-            color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; 
-            z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.2); 
+        :root { 
+            --primary: #3498db; 
+            --dark: #2c3e50; 
+            --light: #f5f7fa;
+            --card-bg: #ffffff; 
         }
 
-        .main-content { display: flex; flex: 1; overflow: hidden; }
+        body, html { 
+            margin: 0; 
+            height: 100%; 
+            font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif; 
+            background: var(--light); 
+            overflow: hidden; 
+        }
+
+        .app-wrapper { 
+            display: flex; 
+            flex-direction: column; 
+            height: 100vh; 
+        }
+
+        header { 
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); 
+            color: white; 
+            padding: 12px 20px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            z-index: 100; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2); 
+        }
+
+        .main-content { 
+            display: flex; 
+            flex: 1; 
+            overflow: hidden; 
+        }
 
         /* 左側控制面板 */
         .sidebar { 
-            width: 300px; background: white; padding: 15px; overflow-y: auto; 
-            border-right: 1px solid #ddd; display: flex; flex-direction: column; gap: 15px; 
-            box-sizing: border-box; z-index: 10;
+            width: 300px; 
+            background: white; 
+            padding: 15px; 
+            overflow-y: auto; 
+            border-right: 1px solid #ddd; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 15px; 
+            box-sizing: border-box; 
+            z-index: 10;
         }
         
         .slider-container { 
-            background: #f9f9f9; padding: 15px; border-radius: 12px; border: 1px solid #eee;
-            box-sizing: border-box; width: 100%; 
+            background: #f9f9f9; 
+            padding: 15px; 
+            border-radius: 12px; 
+            border: 1px solid #eee;
+            box-sizing: border-box; 
+            width: 100%; 
         }
-        #timeSlider { width: 100%; margin: 10px 0; cursor: pointer; display: block; }
-        #dateInput { 
-            width: 100%; padding: 8px; margin-top: 10px; border: 1px solid #ddd; 
-            border-radius: 5px; box-sizing: border-box; font-size: 0.9rem;
-        }
-        .time-display { font-weight: bold; color: var(--primary); font-size: 1.1rem; text-align: center; display: block; }
 
-        .tag-container { display: flex; flex-wrap: wrap; gap: 4px; }
-        .tag-item { 
-            padding: 4px 10px; border: 1px solid #ddd; border-radius: 20px; 
-            font-size: 11px; cursor: pointer; background: #fff; transition: 0.2s; 
+        #timeSlider { 
+            width: 100%; 
+            margin: 10px 0; 
+            cursor: pointer; 
+            display: block; 
         }
-        .tag-item.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        #dateInput { 
+            width: 100%; 
+            padding: 8px; 
+            margin-top: 10px; 
+            border: 1px solid #ddd; 
+            border-radius: 5px; 
+            box-sizing: border-box; 
+            font-size: 0.9rem;
+        }
+
+        .time-display { 
+            font-weight: bold; 
+            color: var(--primary); 
+            font-size: 1.1rem; 
+            text-align: center; 
+            display: block; }
+
+        .tag-container { 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 4px; 
+        }
+
+        .tag-item { 
+            padding: 4px 10px; 
+            border: 1px solid #ddd; 
+            border-radius: 20px; 
+            font-size: 11px; 
+            cursor: pointer; 
+            background: #fff; 
+            transition: 0.2s; 
+        }
+
+        .tag-item.active { 
+            background: var(--primary); 
+            color: white; 
+            border-color: var(--primary); 
+        }
 
         /* 中間地圖 */
-        #map { flex: 1; z-index: 1; }
+        #map { 
+            flex: 1; 
+            z-index: 1; 
+        }
 
         /* 右側詳細分析面板 */
         .detail-panel { 
-            width: 380px; background: #fff; padding: 15px; border-left: 1px solid #ddd; 
-            overflow-y: auto; display: flex; flex-direction: column; gap: 12px; 
+            width: 380px; 
+            background: #fff; 
+            padding: 15px; 
+            border-left: 1px solid #ddd; 
+            overflow-y: auto; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 12px; 
         }
         
         .card { 
-            background: var(--card-bg); border-radius: 10px; padding: 15px; 
-            border: 1px solid #eee; box-shadow: 0 2px 5px rgba(0,0,0,0.03); 
+            background: var(--card-bg); 
+            border-radius: 10px; 
+            padding: 15px; 
+            border: 1px solid #eee; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03); 
         }
-        .card h4 { margin: 0 0 10px 0; color: var(--dark); border-left: 4px solid var(--primary); padding-left: 8px; font-size: 0.9rem; }
-        .stat-aqi-val { font-size: 2.2rem; font-weight: bold; margin: 5px 0; }
+
+        .card h4 { 
+            margin: 0 0 10px 0; 
+            color: var(--dark); 
+            border-left: 4px solid var(--primary); 
+            padding-left: 8px; 
+            font-size: 0.9rem; 
+        }
+        
+        .stat-aqi-val { 
+            font-size: 2.2rem; 
+            font-weight: bold; 
+            margin: 5px 0; 
+        }
         
         @media (max-width: 1024px) {
             .main-content { flex-direction: column; }
