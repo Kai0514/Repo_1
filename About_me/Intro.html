@@ -56,7 +56,6 @@
             transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
 
-        /* 修改：桌面版容器 */
         .container {
             max-width: 1300px;
             width: 100%;
@@ -65,28 +64,6 @@
             display: grid;
             grid-template-columns: 320px 1fr;
             gap: 40px;
-        }
-
-        /* 修改：平板與一般手機版優化 */
-        @media (max-width: 1050px) {
-            .container { 
-                grid-template-columns: 1fr; 
-                padding: 60px 30px 150px;
-            }
-            .side-panel { position: relative !important; top: 0 !important; width: 100% !important; }
-        }
-
-        /* 新增：針對極窄螢幕 (如 iPhone SE) 的強制外距優化 */
-        @media (max-width: 480px) {
-            .container {
-                width: 92%; /* 強制容器寬度為螢幕的 92%，確保左右各有 4% 的外距 */
-                padding-left: 0;
-                padding-right: 0;
-                margin: 40px auto 120px; /* 置中並縮小上下邊距 */
-            }
-            .glass-panel {
-                border-radius: 20px; /* 稍微縮小圓角以適應窄螢幕 */
-            }
         }
 
         /* ===== 4. 左側資訊欄 ===== */
@@ -148,20 +125,20 @@
         .card.clickable:hover .cta-text { transform: translateY(0); }
         .card:hover { transform: translateY(-10px); }
 
-        /* ===== 7. 作品集輪播系統 - 修改最小格狀寬度 ===== */
+        /* ===== 7. 作品集輪播系統 ===== */
         .projects-grid { 
             display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* 下修至 250px 以應對極窄螢幕 */
-            gap: 25px; 
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px; 
             width: 100%;
         }
 
         .card { overflow: hidden; display: flex; flex-direction: column; position: relative; text-decoration: none; color: inherit; cursor: default; width: 100%; }
-        .thumbnail { width: 100%; height: 220px; background: #000; position: relative; overflow: hidden; }
+        .thumbnail { width: 100%; height: 240px; background: #000; position: relative; overflow: hidden; }
         .thumbnail img { width: 100%; height: 100%; object-fit: cover; opacity: 0; position: absolute; top: 0; left: 0; }
-        .card-body { padding: 25px; flex-grow: 1; display: flex; flex-direction: column; }
-        .card-body h3 { font-size: 19px; margin: 0 0 12px 0; color: #fff; }
-        .card-body p { font-size: 13.5px; color: rgba(255,255,255,0.75); line-height: 1.6; margin-bottom: 20px; }
+        .card-body { padding: 30px; flex-grow: 1; display: flex; flex-direction: column; }
+        .card-body h3 { font-size: 20px; margin: 0 0 15px 0; color: #fff; }
+        .card-body p { font-size: 14px; color: rgba(255,255,255,0.75); line-height: 1.7; margin-bottom: 25px; }
 
         /* 動化延遲設定 */
         .img-fade { animation: crossfade 18s infinite; }
@@ -196,12 +173,50 @@
         /* 導覽列 */
         .nav-dock { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); display: flex; gap: 20px; padding: 12px 28px; background: rgba(255, 255, 255, 0.14); backdrop-filter: blur(35px); -webkit-backdrop-filter: blur(35px); border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 35px; z-index: 9999; }
         .nav-link { text-decoration: none; color: #fff; text-align: center; transition: 0.4s; }
-        .nav-icon { width: 48px; height: 48px; background: rgba(255,255,255,0.1); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+        .nav-icon { width: 50px; height: 50px; background: rgba(255,255,255,0.1); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 26px; }
         .nav-label { font-size: 11px; font-weight: 600; margin-top: 5px; }
 
+        /* ===== 8. RWD 窄螢幕優化方案 (主要修正處) ===== */
+        @media (max-width: 1050px) {
+            .container { 
+                grid-template-columns: 1fr; 
+                padding: 60px 40px 150px;
+            }
+            .side-panel { position: relative !important; top: 0 !important; width: 100% !important; }
+        }
+
         @media (max-width: 480px) {
-            .nav-dock { width: 92%; justify-content: space-around; padding: 10px; bottom: 15px; gap: 10px; }
-            .nav-icon { width: 42px; height: 42px; font-size: 20px; }
+            /* 1. 減少容器寬度，確保左右外距 */
+            .container {
+                width: 90%; /* 螢幕兩側會各留 5% 空間 */
+                padding: 40px 0 120px; /* 移除左右內距，改由寬度控制 */
+            }
+
+            /* 2. 限制所有玻璃卡片的最大寬度並置中 */
+            .glass-panel {
+                max-width: 310px; /* 針對 iPhone SE3 的 375px 寬度，留出足夠邊距 */
+                margin-left: auto;
+                margin-right: auto;
+                border-radius: 20px;
+            }
+
+            /* 3. 限制卡片內部文字內容的寬度 */
+            .card-body h3, .card-body p, .card-body .tech-tags {
+                max-width: 260px; /* 進一步縮減內容物寬度，增加內部留白 */
+                margin-left: auto;
+                margin-right: auto;
+            }
+            
+            .card-body {
+                padding: 20px; /* 稍微減少內距讓內容更集中 */
+            }
+
+            .thumbnail {
+                height: 180px; /* 縮小縮圖高度以維持比例 */
+            }
+
+            /* 導覽列寬度優化 */
+            .nav-dock { width: 90%; justify-content: space-around; padding: 10px; bottom: 15px; }
         }
     </style>
 </head>
@@ -234,9 +249,9 @@
         <main class="main-content">
             <section id="summary-section">
                 <div class="glass-panel" style="padding: 30px; margin-bottom: 50px;">
-                    <h2 style="color: var(--accent-cyan); margin-bottom: 20px;">關於我 & 個人特質</h2>
+                    <h2 style="color: var(--accent-cyan); margin-bottom: 20px; text-align: center;">關於我 & 個人特質</h2>
                     <p style="line-height: 1.8; color: rgba(255,255,255,0.9);">你好！我是鄭哲愷，畢業於<b>國立臺灣大學地理環境資源學系</b>。我具備踏實且細心的個性，致力於將複雜的地理數據轉化為直觀的視覺化成果，並具備從無人機航拍規劃到 Web GIS 平台展示的完整實作能力。</p>
-                    <div style="margin-top: 25px;">
+                    <div style="margin-top: 25px; text-align: center;">
                         <div class="trait-tag">🚀 <span>學習力強</span></div>
                         <div class="trait-tag">🔍 <span>細心負責</span></div>
                         <div class="trait-tag">📊 <span>空間邏輯</span></div>
