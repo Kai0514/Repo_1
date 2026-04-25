@@ -120,62 +120,56 @@
         }
 
         /* 針對極小螢幕 (如 iPhone SE) 的微調 */
-        @media (max-width: 750px) {
-            /* 1. 容器：嚴格禁止水平溢出，並增加左右安全邊距感 */
+        
+            
+        @media (max-width: 400px) {
+            /* 1. 參考 1050px 邏輯：強制容器不超出螢幕，並水平置中所有內容 */
             .container { 
-                padding: 30px 10px 100px !important; /* 10px 確保容器邊緣不貼死 */
-                width: 100vw;
+                grid-template-columns: 1fr; 
+                padding: 20px 0 120px !important; /* 移除容器左右內距，改由子元素 margin 控制 */
+                width: 100%;
+                overflow-x: hidden;
                 display: flex;
                 flex-direction: column;
-                align-items: center;
-                overflow-x: hidden;
+                align-items: center; /* 確保所有卡片水平置中 */
             }
 
-            /* 2. 關鍵修正：縮短卡片佔比，並處理內部溢出問題 */
+            /* 2. 針對 400px 以下縮短卡片佔比 (減少寬度佔比) */
+            /* 設為 88% 代表：左右會各留出約 6% 的空隙，絕對不會碰到邊界 */
             .glass-panel, .card {
-                width: 90% !important;   /* 讓卡片寬度占螢幕 90%，左右自然留白 */
-                max-width: 340px;       /* 防止在大螢幕手機上過寬 */
-                margin: 0 auto 20px !important;
-                padding: 25px 15px !important;
-                box-sizing: border-box; /* 確保 padding 不會撐開寬度 */
+                width: 88% !important; 
+                max-width: none;
+                margin: 0 auto 20px !important; /* 置中並增加底部外距 */
+                
+                /* 3. 減少內距，把空間還給文字，防止文字把卡片撐寬 */
+                padding: 20px 15px !important;
+                box-sizing: border-box; /* 嚴格限制寬度計算方式 */
             }
 
-            /* 3. 解決截圖中「文字撐破卡片」的問題 */
-            .side-panel h2 { 
-                font-size: 22px; 
-                white-space: nowrap;    /* 防止名字斷行，但如果名字太長請改 normal */
-            }
-            
+            /* 4. 防止文字（Email/學歷）撐破卡片邊界 */
             .contact-list { 
-                font-size: 12.5px; 
-                line-height: 1.8;
-                word-break: break-all;  /* 關鍵！強制讓長 Email 在邊界處斷行，不撐開卡片 */
-                overflow-wrap: break-word;
+                font-size: 12px; 
+                line-height: 1.7;
+                word-break: break-all; /* 強制長字串斷行 */
             }
 
-            /* 4. 側邊欄內的頭像微調 */
-            .profile-img {
-                width: 110px;
-                height: 110px;
-                margin-bottom: 20px;
-            }
-
-            /* 5. 作品集縮圖比例優化 */
-            .thumbnail {
-                height: 160px; /* 窄螢幕下縮短高度更美觀 */
-            }
-
-            /* 6. 導覽列：確保在窄螢幕不會擋住下方內容 */
-            .nav-dock {
-                width: 85%;
-                max-width: 300px;
-                padding: 8px 15px;
-            }
-
-            .nav-icon {
-                width: 42px;
-                height: 42px;
+            .side-panel h2 { 
                 font-size: 20px;
+                margin-bottom: 5px;
+            }
+
+            /* 5. 側邊欄專屬：調整資訊與圖片的比例 */
+            .profile-img {
+                width: 100px;
+                height: 100px;
+                margin: 0 auto 15px;
+            }
+
+            /* 6. 導覽列：縮小以符合 400px 比例 */
+            .nav-dock {
+                width: 80%;
+                max-width: 280px;
+                padding: 8px 12px;
             }
         }
 
