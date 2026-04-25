@@ -68,39 +68,44 @@
 
         /* ===== 核心 RWD Media Query ===== */
         @media (max-width: 1050px) {
+            /* 1. 調整主容器，確保左右有邊距，且寬度不超出螢幕 */
             .container { 
-                grid-template-columns: 1fr; /* 強制單欄排版 */
-                padding-top: 40px; 
-                padding-bottom: 120px;
+                grid-template-columns: 1fr; 
+                padding: 40px 15px 120px; /* 這裡的 15px 是左右安全邊距 */
+                width: 100%;
+                overflow-x: hidden; /* 防止水平捲動 */
             }
     
-            .side-panel { 
-                position: relative !important; 
-                top: 0 !important; 
-                width: 100% !important; 
-                padding: 30px 20px;
-                margin-bottom: 20px;
+            .side-panel, .main-content {
+                width: 100% !important;
+                max-width: 100%; /* 確保不會撐破邊界 */
+                margin-left: 0;
+                margin-right: 0;
             }
 
+            .glass-panel {
+                width: 100%;
+                margin-bottom: 20px;
+            }
+            
             .profile-img {
                 width: 120px; /* 手機版頭像縮小 */
                 height: 120px;
             }
 
             .projects-grid { 
-                grid-template-columns: 1fr; /* 作品集單欄 */
-                gap: 20px;
-            }
+                    grid-template-columns: 1fr; 
+                    gap: 20px;
+                    width: 100%;
+                }   
 
             .thumbnail {
                 height: 200px; /* 手機版圖片高度降低，避免佔用過多空間 */
             }
 
             .nav-dock {
-                width: 90%; /* 導覽列在手機版寬度調整 */
-                gap: 10px;
-                padding: 10px 15px;
-                bottom: 20px;
+                width: calc(100% - 40px); /* 讓導覽列兩邊也留一點空間 */
+                max-width: 360px;
             }
 
             .nav-icon {
