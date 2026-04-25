@@ -22,11 +22,11 @@
             font-family: var(--main-font);
             color: #fff;
             background: #000a1e;
-            overflow-x: hidden; /* 確保身體層級不出現水平捲軸 */
+            overflow-x: hidden;
             width: 100%;
         }
 
-        /* ===== 2. 雙層背景預載入系統 ===== */
+        /* ===== 2. 雙層背景系統 ===== */
         #bg-layer-1, #bg-layer-2 {
             position: fixed;
             top: 0; left: 0;
@@ -66,66 +66,70 @@
             gap: 40px;
         }
 
-        /* ===== 4. 核心 RWD 修正 (解決 iPhone SE 內容緊貼問題) ===== */
+        /* ===== 4. 核心 RWD 修正：同時減少 Side Panel 與 Main Container 佔比 ===== */
         @media (max-width: 1050px) {
             .container { 
                 grid-template-columns: 1fr; 
-                padding: 40px 0 120px; /* 移除容器左右內距，由內部元件寬度控制 */
+                padding: 40px 0 120px; 
                 width: 100%;
                 display: flex;
                 flex-direction: column;
-                align-items: center; /* 讓內容居中 */
+                align-items: center; 
             }
     
+            /* 調整佔比：將寬度設為 88% 以確保不會貼齊邊緣 */
             .glass-panel, .card {
-                width: 90% !important; /* 核心：左右留出 5% 安全邊距 */
-                max-width: 600px;
-                margin: 0 auto 25px !important;
+                width: 88% !important; 
+                max-width: 550px; /* 限制手機版最大寬度 */
+                margin: 0 auto 20px !important;
+                padding: 25px 20px !important; /* 減少內距以釋放空間 */
                 box-sizing: border-box;
             }
 
             .side-panel {
                 position: relative !important;
                 top: 0 !important;
-                padding: 30px 20px !important;
             }
 
             .profile-img {
-                width: 120px;
-                height: 120px;
+                width: 110px;
+                height: 110px;
             }
 
             .contact-list {
                 font-size: 13px;
-                line-height: 1.8;
-                word-break: break-all; /* 防止長文字撐破卡片 */
+                line-height: 1.7;
+                word-break: break-all;
             }
 
             .projects-grid { 
-                grid-template-columns: 1fr; 
                 width: 100%;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
-                gap: 20px;
+                gap: 15px;
             }   
 
             .thumbnail {
-                height: 200px;
+                height: 180px;
             }
 
+            /* 導覽列優化 */
             .nav-dock {
-                width: 85%;
-                max-width: 340px;
-                padding: 10px 15px;
+                width: 80%;
+                max-width: 320px;
+                padding: 8px 12px;
             }
         }
 
+        /* 針對更窄螢幕（如 iPhone SE）進一步壓低佔比 */
         @media (max-width: 380px) {
             .glass-panel, .card {
-                width: 92% !important; /* 更窄的螢幕微調寬度 */
+                width: 86% !important; 
+                padding: 20px 15px !important;
             }
-            .thumbnail { height: 170px; }
+            .section-header { font-size: 18px; margin-bottom: 20px; }
+            .thumbnail { height: 160px; }
         }
 
         /* ===== 5. 左側資訊欄 (桌面版) ===== */
@@ -185,12 +189,12 @@
         .projects-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 30px; }
         .card { overflow: hidden; display: flex; flex-direction: column; position: relative; text-decoration: none; color: inherit; cursor: default; }
         .thumbnail { width: 100%; height: 240px; background: #000; position: relative; overflow: hidden; }
-        .thumbnail img { width: 100%; height: 100%; font-size: 0; object-fit: cover; opacity: 0; position: absolute; top: 0; left: 0; }
+        .thumbnail img { width: 100%; height: 100%; object-fit: cover; opacity: 0; position: absolute; top: 0; left: 0; }
         .card-body { padding: 30px; flex-grow: 1; display: flex; flex-direction: column; }
         .card-body h3 { font-size: 20px; margin: 0 0 15px 0; color: #fff; }
         .card-body p { font-size: 14px; color: rgba(255,255,255,0.75); line-height: 1.7; margin-bottom: 25px; }
 
-        /* 輪播動畫與延遲設定 */
+        /* 輪播動畫 */
         .img-fade { animation: crossfade 18s infinite; }
         .climate-thumb img:nth-child(1) { animation-delay: 0s; }
         .climate-thumb img:nth-child(2) { animation-delay: 3s; }
