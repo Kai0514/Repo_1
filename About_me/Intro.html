@@ -121,29 +121,45 @@
 
         /* 針對極小螢幕 (如 iPhone SE) 的微調 */
         @media (max-width: 400px) {
-            /* 1. 縮小標題與文字 */
-            .side-panel h2 { font-size: 20px; }
-            .contact-list { font-size: 13px; line-height: 1.8; }
+            /* 1. 讓主容器的左右內距完全由百分比控制 */
+            .container {
+                padding-left: 0;
+                padding-right: 0;
+            }
+
+            /* 2. 縮短所有玻璃面板的寬度 */
+            /* 這裡設為 88% 到 90%，可以讓左右留出明顯的背景空間 */
+            .glass-panel, .card {
+                width: 88% !important; 
+                margin-left: auto !important;
+                margin-right: auto !important;
+                padding: 20px 15px !important; /* 縮小內距，把空間還給文字 */
+            }
+
+            /* 3. 處理文字縮小，避免字太長把卡片撐寬 */
+            .side-panel h2 { 
+                font-size: 19px; 
+                letter-spacing: 1px; 
+            }
             
-            /* 2. 減少內距 (Padding)，釋放更多空間給內容 */
-            .side-panel {
-                padding: 25px 15px !important; /* 讓左右的留白變小，騰出空間給文字 */
+            .contact-list { 
+                font-size: 12px; 
+                line-height: 1.6; 
             }
 
-            /* 3. 調整標籤排版，防止標籤太長撐破盒子 */
-            .trait-tag { 
-                margin-bottom: 6px; 
-                font-size: 11px; 
-                padding: 4px 10px; /* 縮小標籤本身的體積 */
-            }
-
-            /* 4. 關鍵：確保這層面板不會有任何固定寬度 */
-            .glass-panel {
-                margin-left: 5px;   /* 增加一點點外部留白 */
+            /* 4. 讓標籤（Trait Tags）稍微縮小，以免在窄螢幕換行太亂 */
+            .trait-tag {
+                font-size: 11px;
+                padding: 4px 8px;
                 margin-right: 5px;
-                width: calc(80% - 10px) !important; /* 強制寬度減去外邊距，保證不碰邊 */
+                margin-bottom: 5px;
             }
-        }
+
+    /* 5. 作品集縮圖高度微調，讓視覺比例更協調 */
+    .thumbnail {
+        height: 160px;
+    }
+}
 
         /* ===== 4. 左側資訊欄 ===== */
         .side-panel {
