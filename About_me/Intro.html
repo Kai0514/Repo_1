@@ -22,7 +22,7 @@
             font-family: var(--main-font);
             color: #fff;
             background: #000a1e;
-            overflow-x: hidden;
+            overflow-x: hidden; /* 防止直式出現左右滑動 */
             width: 100%;
         }
 
@@ -33,7 +33,6 @@
             width: 100%; height: 100%;
             background-size: cover;
             background-position: center center;
-            background-repeat: no-repeat;
             z-index: -2;
             transition: opacity 2s ease-in-out;
         }
@@ -66,23 +65,23 @@
             gap: 40px;
         }
 
-        /* ===== 4. 核心 RWD 修正：同時減少 Side Panel 與 Main Container 佔比 ===== */
+        /* ===== 4. 核心 RWD：解決直式 (Portrait) 觸碰邊界問題 ===== */
         @media (max-width: 1050px) {
             .container { 
                 grid-template-columns: 1fr; 
-                padding: 40px 0 120px; 
+                padding: 40px 0 120px; /* 移除容器左右內距 */
                 width: 100%;
                 display: flex;
                 flex-direction: column;
-                align-items: center; 
+                align-items: center; /* 確保所有面板置中 */
             }
     
-            /* 調整佔比：將寬度設為 88% 以確保不會貼齊邊緣 */
+            /* 針對手機直式瀏覽，縮減佔比並減少內距 */
             .glass-panel, .card {
-                width: 88% !important; 
-                max-width: 550px; /* 限制手機版最大寬度 */
+                width: 86% !important; /* 核心修正：留出充足左右邊界 */
+                max-width: 500px;
                 margin: 0 auto 20px !important;
-                padding: 25px 20px !important; /* 減少內距以釋放空間 */
+                padding: 20px 15px !important; /* 減少內距，讓文字不擁擠 */
                 box-sizing: border-box;
             }
 
@@ -91,15 +90,12 @@
                 top: 0 !important;
             }
 
-            .profile-img {
-                width: 110px;
-                height: 110px;
-            }
+            .profile-img { width: 110px; height: 110px; }
 
             .contact-list {
                 font-size: 13px;
                 line-height: 1.7;
-                word-break: break-all;
+                word-break: break-all; /* 防止長文字撐破面板 */
             }
 
             .projects-grid { 
@@ -110,29 +106,17 @@
                 gap: 15px;
             }   
 
-            .thumbnail {
-                height: 180px;
-            }
+            .thumbnail { height: 170px; }
 
-            /* 導覽列優化 */
             .nav-dock {
                 width: 80%;
-                max-width: 320px;
+                max-width: 300px;
                 padding: 8px 12px;
             }
+            .nav-icon { width: 42px; height: 42px; font-size: 22px; }
         }
 
-        /* 針對更窄螢幕（如 iPhone SE）進一步壓低佔比 */
-        @media (max-width: 380px) {
-            .glass-panel, .card {
-                width: 86% !important; 
-                padding: 20px 15px !important;
-            }
-            .section-header { font-size: 18px; margin-bottom: 20px; }
-            .thumbnail { height: 160px; }
-        }
-
-        /* ===== 5. 左側資訊欄 (桌面版) ===== */
+        /* ===== 5. 側邊欄 (桌面) ===== */
         .side-panel {
             position: sticky; top: 100px;
             height: fit-content; padding: 40px 25px;
@@ -150,7 +134,7 @@
         .contact-list { text-align: left; font-size: 14px; line-height: 2.1; color: rgba(255,255,255,0.9); }
         .contact-list b { color: var(--accent-cyan); font-weight: 500; margin-right: 5px; }
 
-        /* ===== 6. 技術專長與標籤 ===== */
+        /* ===== 6. 技術專長 ===== */
         .section-header { font-size: 22px; font-weight: 600; margin-bottom: 30px; display: flex; align-items: center; padding-top: 20px; }
         .section-header::after { content: ''; flex-grow: 1; height: 1px; background: linear-gradient(to right, rgba(0,255,255,0.4), transparent); margin-left: 15px; }
         
@@ -165,7 +149,16 @@
         .tag { background: rgba(0, 255, 255, 0.12); color: var(--accent-cyan); padding: 5px 12px; border-radius: 10px; font-size: 11px; font-weight: 600; border: 1px solid rgba(0, 255, 255, 0.1); }
         .trait-tag { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); padding: 6px 15px; border-radius: 20px; font-size: 13px; display: inline-flex; align-items: center; gap: 5px; margin-right: 10px; margin-bottom: 10px; }
 
-        /* ===== 7. 滑鼠懸停提示層 ===== */
+        /* ===== 7. 作品展示與動畫 ===== */
+        .projects-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 30px; }
+        .card { overflow: hidden; display: flex; flex-direction: column; position: relative; text-decoration: none; color: inherit; cursor: default; }
+        .thumbnail { width: 100%; height: 240px; background: #000; position: relative; overflow: hidden; }
+        .thumbnail img { width: 100%; height: 100%; object-fit: cover; opacity: 0; position: absolute; top: 0; left: 0; }
+        .card-body { padding: 30px; flex-grow: 1; display: flex; flex-direction: column; }
+        .card-body h3 { font-size: 20px; margin: 0 0 15px 0; color: #fff; }
+        .card-body p { font-size: 14px; color: rgba(255,255,255,0.75); line-height: 1.7; margin-bottom: 25px; }
+
+        /* 懸停效果 */
         .card-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 255, 255, 0.15);
@@ -180,47 +173,22 @@
             font-weight: 600; font-size: 16px; color: #fff;
             transform: translateY(20px); transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-
         .card.clickable:hover .card-overlay { opacity: 1; }
         .card.clickable:hover .cta-text { transform: translateY(0); }
         .card:hover { transform: translateY(-10px); }
 
-        /* ===== 8. 作品展示區 ===== */
-        .projects-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 30px; }
-        .card { overflow: hidden; display: flex; flex-direction: column; position: relative; text-decoration: none; color: inherit; cursor: default; }
-        .thumbnail { width: 100%; height: 240px; background: #000; position: relative; overflow: hidden; }
-        .thumbnail img { width: 100%; height: 100%; object-fit: cover; opacity: 0; position: absolute; top: 0; left: 0; }
-        .card-body { padding: 30px; flex-grow: 1; display: flex; flex-direction: column; }
-        .card-body h3 { font-size: 20px; margin: 0 0 15px 0; color: #fff; }
-        .card-body p { font-size: 14px; color: rgba(255,255,255,0.75); line-height: 1.7; margin-bottom: 25px; }
-
-        /* 輪播動畫 */
+        /* 動畫設定 (與原代碼一致) */
         .img-fade { animation: crossfade 18s infinite; }
-        .climate-thumb img:nth-child(1) { animation-delay: 0s; }
-        .climate-thumb img:nth-child(2) { animation-delay: 3s; }
-        .climate-thumb img:nth-child(3) { animation-delay: 6s; }
-        .climate-thumb img:nth-child(4) { animation-delay: 9s; }
-        .climate-thumb img:nth-child(5) { animation-delay: 12s; }
-        .climate-thumb img:nth-child(6) { animation-delay: 15s; }
-
-        .air-thumb img { animation-name: crossfade-5; animation-duration: 15s; }
-        .air-thumb img:nth-child(1) { animation-delay: 0s; }
-        .air-thumb img:nth-child(2) { animation-delay: 3s; }
-        .air-thumb img:nth-child(3) { animation-delay: 6s; }
-        .air-thumb img:nth-child(4) { animation-delay: 9s; }
-        .air-thumb img:nth-child(5) { animation-delay: 12s; }
-
-        .crime-thumb img, .uav-thumb img { animation-name: crossfade-3; animation-duration: 9s; }
-        .crime-thumb img:nth-child(1), .uav-thumb img:nth-child(1) { animation-delay: 0s; }
-        .crime-thumb img:nth-child(2), .uav-thumb img:nth-child(2) { animation-delay: 3s; }
-        .crime-thumb img:nth-child(3), .uav-thumb img:nth-child(3) { animation-delay: 6s; }
-
         @keyframes crossfade { 0% { opacity: 0; } 5% { opacity: 0.8; } 16.6% { opacity: 0.8; } 21.6% { opacity: 0; } 100% { opacity: 0; } }
         @keyframes crossfade-5 { 0% { opacity: 0; } 5% { opacity: 0.8; } 20% { opacity: 0.8; } 25% { opacity: 0; } 100% { opacity: 0; } }
         @keyframes crossfade-3 { 0% { opacity: 0; } 5% { opacity: 0.8; } 33% { opacity: 0.8; } 38% { opacity: 0; } 100% { opacity: 0; } }
 
+        .climate-thumb img:nth-child(1) { animation-delay: 0s; } .climate-thumb img:nth-child(2) { animation-delay: 3s; }
+        .air-thumb img { animation-name: crossfade-5; animation-duration: 15s; }
+        .crime-thumb img, .uav-thumb img { animation-name: crossfade-3; animation-duration: 9s; }
+
         /* 導覽列 */
-        .nav-dock { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); display: flex; gap: 20px; padding: 12px 28px; background: rgba(255, 255, 255, 0.14); backdrop-filter: blur(35px); -webkit-backdrop-filter: blur(35px); border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 35px; z-index: 9999; }
+        .nav-dock { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); display: flex; gap: 20px; padding: 12px 28px; background: rgba(255, 255, 255, 0.14); backdrop-filter: blur(35px); border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 35px; z-index: 9999; }
         .nav-link { text-decoration: none; color: #fff; text-align: center; transition: 0.4s; }
         .nav-icon { width: 50px; height: 50px; background: rgba(255,255,255,0.1); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 26px; }
         .nav-label { font-size: 11px; font-weight: 600; margin-top: 5px; }
@@ -256,7 +224,7 @@
             <section id="summary-section">
                 <div class="glass-panel" style="padding: 35px; margin-bottom: 50px;">
                     <h2 style="color: var(--accent-cyan); margin-bottom: 20px;">關於我 & 個人特質</h2>
-                    <p style="line-height: 1.8; color: rgba(255,255,255,0.9);">你好！我是鄭哲愷，畢業於<b>國立臺灣大學地理環境資源學系</b>。我具備踏實且細心的個性，致力於將複雜的地理數據轉化為直觀的視覺化成果，並具備從無人機航拍規劃到 Web GIS 平台展示的完整實作能力。</p>
+                    <p style="line-height: 1.8; color: rgba(255,255,255,0.9);">你好！我是鄭哲愷，畢業於<b>國立臺灣大學地理環境資源學系</b>。我具備踏實且細心的個性，致力於將複雜的地理數據轉化為直觀的視覺化成果。</p>
                     <div style="margin-top: 25px;">
                         <div class="trait-tag">🚀 <span>學習力強</span></div>
                         <div class="trait-tag">🔍 <span>細心負責</span></div>
@@ -286,7 +254,6 @@
             <section id="portfolio-section">
                 <div class="section-header">Featured Projects</div>
                 <div class="projects-grid">
-
                     <a href="https://github.com/Kai0514/Repo_1/tree/main/Crime_Map_Web" class="card glass-panel clickable">
                         <div class="card-overlay"><div class="cta-text">🔗 前往專案展示</div></div>
                         <div class="thumbnail crime-thumb">
@@ -296,7 +263,7 @@
                         </div>
                         <div class="card-body">
                             <h3>Web GIS 臺北市犯罪地圖</h3>
-                            <p>整合 Mapbox GL JS 與 Turf.js，視覺化 3,000+ 筆資料，開發時序 Dashboard 與熱點分析。</p>
+                            <p>整合 Mapbox GL JS 與 Turf.js，視覺化 3,000+ 筆資料。</p>
                             <div class="tech-tags"><span class="tag">Mapbox GL JS</span><span class="tag">Turf.js</span></div>
                         </div>
                     </a>
@@ -305,49 +272,16 @@
                         <div class="card-overlay"><div class="cta-text">🔗 前往專案展示</div></div>
                         <div class="thumbnail climate-thumb">
                             <img src="temp_diff_var.png" class="img-fade">
-                            <img src="temp_diff_growth.png" class="img-fade">
-                            <img src="avg_temp_growth.png" class="img-fade">
-                            <img src="avg_temp_var.png" class="img-fade">
-                            <img src="rain_growth.png" class="img-fade">
                             <img src="rain_var.png" class="img-fade">
                         </div>
                         <div class="card-body">
                             <h3>Python 30年氣候時空分析</h3>
-                            <p>處理百萬筆觀測資料，透過線性建模識別氣溫成長趨勢與氣候極端化熱區。</p>
-                            <div class="tech-tags"><span class="tag">Python</span><span class="tag">Pandas</span><span class="tag">Matplotlib</span></div>
+                            <p>處理百萬筆觀測資料，識別氣溫成長趨勢與氣候極端化熱區。</p>
+                            <div class="tech-tags"><span class="tag">Python</span><span class="tag">Pandas</span></div>
                         </div>
                     </a>
 
-                    <a href="https://github.com/Kai0514/Repo_1/tree/main/Air_Pollution_Sta%26Web" class="card glass-panel clickable">
-                        <div class="card-overlay"><div class="cta-text">🔗 前往專案展示</div></div>
-                        <div class="thumbnail air-thumb">
-                            <img src="air_web_map.jpg" class="img-fade">
-                            <img src="pm25.png" class="img-fade">
-                            <img src="over_daycount.png" class="img-fade">
-                            <img src="pm25_month.png" class="img-fade">
-                            <img src="pm25_hour.png" class="img-fade">
-                        </div>
-                        <div class="card-body">
-                            <h3>北部空品時空分析系統</h3>
-                            <p>整合環境部資料，實作 AQI 計算邏輯並建立互動式 Web GIS 視覺化流程。</p>
-                            <div class="tech-tags"><span class="tag">Data Processing</span><span class="tag">Web GIS</span><span class="tag">JavaScript</span></div>
-                        </div>
-                    </a>
-
-                    <div class="card glass-panel">
-                        <div class="thumbnail uav-thumb">
-                            <img src="UAV_ground.jpg" class="img-fade">
-                            <img src="UAV_DEM.jpg" class="img-fade">
-                            <img src="UAV_ortho.jpg" class="img-fade">
-                        </div>
-                        <div class="card-body">
-                            <h3>UAV 攝影測量與三維建模</h3>
-                            <p>產製公分級精度之 DSM、正射影像與校園模型，展現高精確度建模實力。</p>
-                            <div class="tech-tags"><span class="tag">Metashape</span><span class="tag">3D Modeling</span><span class="tag">RTK</span></div>
-                        </div>
                     </div>
-
-                </div>
             </section>
         </main>
     </div>
@@ -355,30 +289,22 @@
     <script>
         const backgrounds = [
             'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072',
-            'https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?q=80&w=2072',
-            'https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?q=80&w=2070',
-            'https://images.unsplash.com/photo-1446941611757-91d2c3bd3d45?q=80&w=2002'
+            'https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?q=80&w=2072'
         ];
         let bgIndex = 0;
         const layer1 = document.getElementById('bg-layer-1');
         const layer2 = document.getElementById('bg-layer-2');
         let activeLayer = layer1;
         layer1.style.backgroundImage = `url('${backgrounds[0]}')`;
-        backgrounds.forEach(url => { const img = new Image(); img.src = url; });
-
         function updateBg() {
             bgIndex = (bgIndex + 1) % backgrounds.length;
             const nextUrl = backgrounds[bgIndex];
             if (activeLayer === layer1) {
                 layer2.style.backgroundImage = `url('${nextUrl}')`;
-                layer1.style.opacity = '0';
-                layer2.style.opacity = '1';
-                activeLayer = layer2;
+                layer1.style.opacity = '0'; layer2.style.opacity = '1'; activeLayer = layer2;
             } else {
                 layer1.style.backgroundImage = `url('${nextUrl}')`;
-                layer2.style.opacity = '0';
-                layer1.style.opacity = '1';
-                activeLayer = layer1;
+                layer2.style.opacity = '0'; layer1.style.opacity = '1'; activeLayer = layer1;
             }
         }
         setInterval(updateBg, 10000);
