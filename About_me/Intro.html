@@ -121,64 +121,65 @@
 
         /* 針對極小螢幕 (如 iPhone SE) 的微調 */
         @media (max-width: 400px) {
-            /* 1. 減少容器頂部間距，讓手機一進來就看到重點 */
+            /* 1. 參考 1050px 邏輯：確保容器寬度為 100% 且不產生橫向捲軸 */
             .container {
-                padding: 20px 0 100px;
+                grid-template-columns: 1fr;
+                padding: 30px 0 100px; /* 上下內距，左右留給子元素控制 */
+                width: 100%;
+                overflow-x: hidden;
+                display: flex;
+                flex-direction: column;
+                align-items: center; /* 強制所有內容水平置中 */
             }
 
-            /* 2. 減少介紹框在螢幕的寬度佔比 */
-            /* 這裡設為 84%，代表左右會各空出 8% 的背景空間 */
+            /* 2. 同時減少外距與寬度佔比 */
+            /* 寬度設為 86%：左右會各有 7% 的安全邊距，既不貼邊也能讓卡片顯瘦 */
             .glass-panel, .card {
-                width: 84% !important; 
+                width: 86% !important; 
+                max-width: none;
                 margin-left: auto !important;
                 margin-right: auto !important;
                 
-                /* 同時減少內部的內距 (Padding)，讓內容跟邊框的距離縮小，比例才協調 */
-                padding: 18px 12px !important; 
-                border-radius: 20px !important; /* 縮小一點圓角，更適合窄卡片 */
-                margin-bottom: 25px !important; /* 增加卡片與卡片之間的垂直距離 */
+                /* 3. 內部縮減：因為卡片變瘦了，內距也要同步縮小才不會顯得擁擠 */
+                padding: 20px 15px !important;
+                border-radius: 20px !important; 
+                margin-bottom: 25px !important;
             }
 
-            /* 3. 作品集縮圖高度也隨比例縮短，避免變成長方形 */
-            .thumbnail {
-                height: 150px;
-            }
-
-            /* 4. 文字內容微調：避免字體太大導致在窄卡片裡頻繁換行 */
+            /* 4. 針對側邊欄文字優化，避免窄卡片導致文字碎裂 */
             .side-panel h2 { 
-                font-size: 18px; 
+                font-size: 20px; 
+                margin-bottom: 5px;
             }
     
             .contact-list { 
-                font-size: 11.5px; 
+                font-size: 12px; 
                 line-height: 1.6;
-                padding-left: 5px; /* 稍微往內移一點 */
+                word-break: break-all; /* 防止長 Email 撐破窄卡片 */
             }
 
             .trait-tag {
-                font-size: 10px;
-                padding: 3px 8px;
-                margin-bottom: 4px;
+                font-size: 11px;
+                padding: 4px 10px;
+                margin: 0 4px 8px 0;
             }
 
-            /* 5. 導覽列縮小，不要擋到太窄的卡片 */
-            .nav-dock {
-                width: 80%;
-                padding: 8px 12px;
+            /* 5. 調整作品集縮圖比例 */
+            .thumbnail {
+                height: 160px; /* 稍微縮短高度，符合變窄後的卡片比例 */
             }
-            
-            .nav-icon {
-                width: 40px;
-                height: 40px;
-                font-size: 20px;
+
+            /* 6. 導覽列縮放 */
+            .nav-dock {
+                width: 85%;
+                padding: 10px;
             }
         }
 
-    /* 5. 作品集縮圖高度微調，讓視覺比例更協調 */
-    .thumbnail {
-        height: 160px;
-    }
-}
+        /* 5. 作品集縮圖高度微調，讓視覺比例更協調 */
+        .thumbnail {
+            height: 160px;
+        }
 
         /* ===== 4. 左側資訊欄 ===== */
         .side-panel {
