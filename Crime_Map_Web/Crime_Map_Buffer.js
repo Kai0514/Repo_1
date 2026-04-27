@@ -20,7 +20,7 @@ map = new mapboxgl.Map({
 });
 
 // 載入犯罪資料
-fetch('./crime_data_cleaned.geojson')
+fetch('https://raw.githubusercontent.com/Kai0514/Repo_1/main/Crime_Map_Web/Crime_Map_Data.geojson')
     .then(response => response.json())
     .then(data => {
         crimeData = data;

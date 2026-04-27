@@ -107,7 +107,7 @@ async function initialize() {
 // 載入數據
 async function loadData() {
     try {
-        const response = await fetch('./crime_data_cleaned.geojson');
+        const response = await fetch('https://raw.githubusercontent.com/Kai0514/Repo_1/main/Crime_Map_Web/Crime_Map_Data.geojson);
         const data = await response.json();
         globalData = data.features;
         console.log('Data loaded:', globalData.length, 'records');

@@ -276,7 +276,7 @@ map.on('load', () => {
     const themeButton = document.getElementById('theme-toggle');
     themeButton.className = `theme-button ${currentTheme}`;
     
-    fetch('./crime_data_cleaned.geojson')
+    fetch('https://raw.githubusercontent.com/Kai0514/Repo_1/main/Crime_Map_Web/Crime_Map_Data.geojson')
         .then(response => response.json())
         .then(data => {
             crimeData = data;
