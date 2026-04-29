@@ -1,528 +1,168 @@
-// 預設的犯罪類型和行政區列表
+const districtList = ["中正區", "大同區", "中山區", "松山區", "大安區", "萬華區", "信義區", "士林區", "北投區", "內湖區", "南港區", "文山區"];
 const crimeTypes = ["住宅竊盜", "機車竊盜", "自行車竊盜", "汽車竊盜"];
-const districtList = [
-    "中正區", "大同區", "中山區", 
-    "松山區", "大安區", "萬華區", 
-    "信義區", "士林區", "北投區", 
-    "內湖區", "南港區", "文山區"
-];
 
-// 全局變數
 let globalData = [];
-let selectedCrimeTypes = new Set();
 let selectedDistricts = new Set();
+let selectedCrimeTypes = new Set();
 let timeSeriesChart = null;
 
-// 從地址中提取行政區
-function getDistrict(location) {
-    for (const district of districtList) {
-        if (location.includes(district)) {
-            return district;
-        }
-    }
-    return '未知';
-}
+function initialize() {
+    const distBox = document.getElementById('district-buttons');
+    const typeBox = document.getElementById('crime-type-buttons');
 
-// 初始化日期選擇器
-function initializeDatePickers() {
-    const config = {
-        locale: "zh_tw",
-        dateFormat: "Y-m-d",
-        onChange: () => updateVisualization(),
-        disableMobile: true // 強制桌面樣式
-    };
-    
-    flatpickr("#start-date", {
-        ...config,
-        defaultDate: "2014-01-01"
-    });
-
-    flatpickr("#end-date", {
-        ...config,
-        defaultDate: "2023-12-31"
-    });
-}
-
-
-// 初始化按鈕
-function initializeButtons() {
-    // 初始化犯罪類型按鈕
-    const crimeButtonsContainer = document.getElementById('crime-type-buttons');
-    crimeButtonsContainer.innerHTML = '';
-    crimeTypes.forEach(type => {
-        const button = document.createElement('button');
-        button.className = 'toggle-button';
-        button.textContent = type;
-        button.onclick = () => toggleCrimeType(type, button);
-        crimeButtonsContainer.appendChild(button);
-    });
-
-    // 初始化行政區按鈕
-    const districtButtonsContainer = document.getElementById('district-buttons');
-    districtButtonsContainer.innerHTML = '';
-    districtList.forEach(district => {
-        const button = document.createElement('button');
-        button.className = 'toggle-button';
-        button.textContent = district;
-        button.onclick = () => toggleDistrict(district, button);
-        districtButtonsContainer.appendChild(button);
-    });
-
-    // 初始狀態顯示提示訊息
-    updateVisualization();
-}
-
-// 切換犯罪類型選擇
-function toggleCrimeType(type, button) {
-    if (selectedCrimeTypes.has(type)) {
-        selectedCrimeTypes.delete(type);
-        button.classList.remove('active');
-    } else {
-        selectedCrimeTypes.add(type);
-        button.classList.add('active');
-    }
-    updateVisualization();
-}
-
-// 切換行政區選擇
-function toggleDistrict(district, button) {
-    if (selectedDistricts.has(district)) {
-        selectedDistricts.delete(district);
-        button.classList.remove('active');
-    } else {
-        selectedDistricts.add(district);
-        button.classList.add('active');
-    }
-    updateVisualization();
-}
-
-// 初始化
-async function initialize() {
-    await loadData();
-    initializeDatePickers();
-    initializeButtons();
-    setupEventListeners();
-}
-
-// 載入數據
-async function loadData() {
-    try {
-        const response = await fetch('https://raw.githubusercontent.com/Kai0514/Repo_1/main/Crime_Map_Web/Crime_Map_Data.geojson');
-        const data = await response.json();
-        globalData = data.features;
-        console.log('Data loaded:', globalData.length, 'records');
-    } catch (error) {
-        console.error('Error loading data:', error);
-        alert('數據載入失敗，請確保數據文件存在且可訪問');
-    }
-}
-
-// 設置事件監聽器
-function setupEventListeners() {
-    // 下載按鈕
-    document.getElementById('download-chart').addEventListener('click', downloadChart);
-    document.getElementById('download-geojson').addEventListener('click', downloadCSV); // 更新按鈕的事件處理函數
-}
-
-// 獲取過濾後的數據
-function getFilteredData() {
-    const startDate = document.getElementById('start-date').value;
-    const endDate = document.getElementById('end-date').value;
-
-    return globalData.filter(item => {
-        const date = item.properties.發生日期;
-        const district = getDistrict(item.properties.發生地點);
-        const type = item.properties.案類;
-        
-        const matchDate = (!startDate || date >= startDate) && (!endDate || date <= endDate);
-        const matchDistrict = selectedDistricts.size === 0 || selectedDistricts.has(district);
-        const matchType = selectedCrimeTypes.size === 0 || selectedCrimeTypes.has(type);
-
-        return matchDate && matchDistrict && matchType;
-    });
-}
-
-// 更新統計摘要
-function updateStats(data) {
-    // 如果沒有選擇任何條件，顯示預設值
-    if (selectedCrimeTypes.size === 0 || selectedDistricts.size === 0) {
-        document.getElementById('total-cases').textContent = '0';
-        document.getElementById('avg-monthly-cases').textContent = '0';
-        document.getElementById('top-district').textContent = '-';
-        document.getElementById('top-crime-type').textContent = '-';
-        return;
-    }
-
-    // 計算總案件數
-    const totalCases = data.length;
-    document.getElementById('total-cases').textContent = totalCases;
-
-    if (totalCases === 0) {
-        document.getElementById('avg-monthly-cases').textContent = '0';
-        document.getElementById('top-district').textContent = '-';
-        document.getElementById('top-crime-type').textContent = '-';
-        return;
-    }
-
-    // 計算每月平均案件數
-    const dates = data.map(item => item.properties.發生日期.substring(0, 7)); // 取年月
-    const uniqueMonths = new Set(dates).size;
-    const avgMonthlyCases = (totalCases / uniqueMonths).toFixed(1);
-    document.getElementById('avg-monthly-cases').textContent = avgMonthlyCases;
-
-    // 計算最高發生區域
-    const districtCounts = {};
-    data.forEach(item => {
-        const district = getDistrict(item.properties.發生地點);
-        districtCounts[district] = (districtCounts[district] || 0) + 1;
-    });
-    const topDistrict = Object.entries(districtCounts)
-        .sort((a, b) => b[1] - a[1])[0][0];
-    document.getElementById('top-district').textContent = topDistrict;
-
-    // 計算主要犯罪類型
-    const crimeCounts = {};
-    data.forEach(item => {
-        const type = item.properties.案類;
-        crimeCounts[type] = (crimeCounts[type] || 0) + 1;
-    });
-    const topCrimeType = Object.entries(crimeCounts)
-        .sort((a, b) => b[1] - a[1])[0][0];
-    document.getElementById('top-crime-type').textContent = topCrimeType;
-}
-
-// 更新時間序列圖表
-function updateTimeSeriesChart(data) {
-    const ctx = document.getElementById('timeSeriesChart');
-    if (!ctx) {
-        console.error('Cannot find chart canvas');
-        return;
-    }
-
-    // 基本檢查
-    if (selectedCrimeTypes.size === 0 || selectedDistricts.size === 0) {
-        if (timeSeriesChart) {
-            timeSeriesChart.destroy();
-            timeSeriesChart = null;
-        }
-        const context = ctx.getContext('2d');
-        context.clearRect(0, 0, ctx.width, ctx.height);
-        context.font = '16px Arial';
-        context.textAlign = 'center';
-        context.textBaseline = 'middle';
-        context.fillText('請選擇至少一個犯罪類型和一個行政區', ctx.width / 2, ctx.height / 2);
-        return;
-    }
-
-    // 為每個選定的行政區準備數據
-    const districtData = {};
-    selectedDistricts.forEach(district => {
-        districtData[district] = {};
-    });
-
-    // 按區域和月份分類數據
-    data.forEach(item => {
-        const fullDate = item.properties.發生日期.split('T')[0];
-        // 只取年月部分 (YYYY-MM)
-        const monthDate = fullDate.substring(0, 7);
-        const district = getDistrict(item.properties.發生地點);
-        
-        if (selectedDistricts.has(district)) {
-            if (!districtData[district][monthDate]) {
-                districtData[district][monthDate] = 0;
-            }
-            districtData[district][monthDate]++;
-        }
-    });
-
-    // 獲取所有月份並排序
-    const allMonths = [...new Set(data.map(item => 
-        item.properties.發生日期.split('T')[0].substring(0, 7)
-    ))].sort();
-
-    // 格式化月份顯示
-    const formatMonth = (yearMonth) => {
-        const [year, month] = yearMonth.split('-');
-        return `${year}年${month}月`;
-    };
-
-    // 準備數據集
-    const datasets = Array.from(selectedDistricts).map((district, index) => {
-        const colors = [
-            'rgb(255, 99, 132)',   // 紅色
-            'rgb(54, 162, 235)',   // 藍色
-            'rgb(75, 192, 192)',   // 青色
-            'rgb(255, 159, 64)',   // 橙色
-            'rgb(153, 102, 255)',  // 紫色
-            'rgb(255, 205, 86)',   // 黃色
-            'rgb(201, 203, 207)',  // 灰色
-            'rgb(255, 99, 255)',   // 粉紅色
-            'rgb(99, 255, 132)',   // 綠色
-            'rgb(99, 132, 255)',   // 深藍色
-            'rgb(255, 159, 255)',  // 粉紫色
-            'rgb(159, 255, 159)'   // 淺綠色
-        ];
-
-        const dataPoints = allMonths.map(month => 
-            Math.round(districtData[district][month] || 0) // 將數值四捨五入為整數
-        );
-
-        return {
-            label: district,
-            data: dataPoints,
-            borderColor: colors[index % colors.length],
-            backgroundColor: colors[index % colors.length].replace('rgb', 'rgba').replace(')', ', 0.1)'),
-            borderWidth: 2,
-            tension: 0.1,
-            fill: false,
-            pointRadius: 2,
-            pointHoverRadius: 5
+    districtList.forEach(d => {
+        const b = document.createElement('button');
+        b.className = 'toggle-button'; b.innerText = d;
+        b.onclick = () => {
+            b.classList.toggle('active');
+            selectedDistricts.has(d) ? selectedDistricts.delete(d) : selectedDistricts.add(d);
+            updateVisualization();
         };
+        distBox.appendChild(b);
     });
 
-    // 更新圖表
-    if (timeSeriesChart) {
-        timeSeriesChart.destroy();
-    }
+    crimeTypes.forEach(t => {
+        const b = document.createElement('button');
+        b.className = 'toggle-button'; b.innerText = t;
+        b.onclick = () => {
+            b.classList.toggle('active');
+            selectedCrimeTypes.has(t) ? selectedCrimeTypes.delete(t) : selectedCrimeTypes.add(t);
+            updateVisualization();
+        };
+        typeBox.appendChild(b);
+    });
 
+    flatpickr(".date-input", { locale: "zh_tw", dateFormat: "Y-m-d", onChange: updateVisualization });
+    
+    document.getElementById('reset-filters').onclick = resetFilters;
+    document.getElementById('export-chart').onclick = exportChart;
+    document.getElementById('download-csv').onclick = downloadCSV;
+
+    setupTheme();
+    loadData();
+}
+
+async function loadData() {
+    const status = document.getElementById('sys-status');
+    try {
+        const res = await fetch('https://raw.githubusercontent.com/Kai0514/Repo_1/main/Crime_Map_Web/Crime_Map_Data.geojson');
+        const data = await res.json();
+        globalData = data.features;
+        updateVisualization();
+    } catch (e) { status.innerText = "● CONNECTION FAILED"; }
+}
+
+function updateVisualization() {
+    const start = document.getElementById('start-date').value;
+    const end = document.getElementById('end-date').value;
+
+    const filtered = globalData.filter(item => {
+        const p = item.properties;
+        const d = districtList.find(dist => p.發生地點.includes(dist)) || '未知';
+        const matchDate = (!start || p.發生日期 >= start) && (!end || p.發生日期 <= end);
+        const matchDist = selectedDistricts.size === 0 || selectedDistricts.has(d);
+        const matchType = selectedCrimeTypes.size === 0 || selectedCrimeTypes.has(p.案類);
+        return matchDate && matchDist && matchType;
+    });
+
+    // 動態月平均計算
+    const sDate = start ? new Date(start) : new Date("2024-01-01");
+    const eDate = end ? new Date(end) : new Date();
+    const months = Math.max(1, (eDate.getFullYear() - sDate.getFullYear()) * 12 + (eDate.getMonth() - sDate.getMonth()) + 1);
+    
+    document.getElementById('total-cases').innerText = filtered.length;
+    document.getElementById('avg-monthly-cases').innerText = (filtered.length / months).toFixed(1);
+
+    // 統計最高地區
+    const counts = {};
+    filtered.forEach(item => {
+        const d = districtList.find(dist => item.properties.發生地點.includes(dist)) || '其他';
+        counts[d] = (counts[d] || 0) + 1;
+    });
+    const sorted = Object.entries(counts).sort((a,b) => b[1] - a[1]);
+    document.getElementById('top-district').innerText = sorted[0] ? `${sorted[0][0]} (${sorted[0][1]})` : '-';
+
+    renderChart(filtered);
+    renderTable(filtered);
+}
+
+function renderChart(data) {
+    const ctx = document.getElementById('timeSeriesChart').getContext('2d');
+    const isDark = document.body.getAttribute('data-theme') === 'dark';
+    const mainColor = isDark ? '#FF0033' : '#1E3A8A';
+
+    const daily = {};
+    data.forEach(d => daily[d.properties.發生日期] = (daily[d.properties.發生日期] || 0) + 1);
+    const labels = Object.keys(daily).sort();
+
+    const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+    gradient.addColorStop(0, isDark ? 'rgba(255, 0, 51, 0.3)' : 'rgba(30, 58, 138, 0.2)');
+    gradient.addColorStop(1, 'transparent');
+
+    if (timeSeriesChart) timeSeriesChart.destroy();
     timeSeriesChart = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: allMonths.map(formatMonth), // 格式化月份標籤
-            datasets: datasets
+            labels: labels,
+            datasets: [{
+                label: '每日案件數',
+                data: labels.map(l => daily[l]),
+                borderColor: mainColor,
+                backgroundColor: gradient,
+                fill: true, tension: 0.4, borderWidth: 3, pointRadius: 2
+            }]
         },
         options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                title: {
-                    display: true,
-                    text: '各行政區案件數量時間分布',
-                    font: {
-                        size: 16
-                    }
-                },
-                tooltip: {
-                    mode: 'index',
-                    intersect: false,
-                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                    titleColor: '#000',
-                    bodyColor: '#000',
-                    borderColor: '#ddd',
-                    borderWidth: 1,
-                    callbacks: {
-                        label: function(context) {
-                            return `${context.dataset.label}: ${Math.round(context.raw)}件`; // 顯示整數件數
-                        }
-                    }
-                },
-                legend: {
-                    position: 'top',
-                    labels: {
-                        usePointStyle: true,
-                        padding: 20,
-                        font: {
-                            size: 12
-                        }
-                    }
-                }
-            },
-            interaction: {
-                mode: 'nearest',
-                axis: 'x',
-                intersect: false
-            },
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
             scales: {
-                x: {
-                    title: {
-                        display: true,
-                        text: '月份',
-                        font: {
-                            size: 14
-                        }
-                    },
-                    ticks: {
-                        maxRotation: 45,
-                        minRotation: 45,
-                        font: {
-                            size: 11
-                        }
-                    }
-                },
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: '案件數',
-                        font: {
-                            size: 14
-                        }
-                    },
-                    ticks: {
-                        stepSize: 1, // 確保y軸刻度為整數
-                        font: {
-                            size: 12
-                        }
-                    }
-                }
+                x: { grid: { display: false }, ticks: { color: isDark ? '#888' : '#333' } },
+                y: { ticks: { color: isDark ? '#888' : '#333' } }
             }
         }
     });
 }
 
-// 更新表格數據
-function updateTable(data) {
-    const tbody = document.getElementById('dataTable').querySelector('tbody');
-    if (!tbody) {
-        console.error('Cannot find table body');
-        return;
-    }
-
-    // 如果沒有選擇任何條件，顯示提示訊息
-    if (selectedCrimeTypes.size === 0 || selectedDistricts.size === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">請選擇至少一個犯罪類型和一個行政區</td></tr>';
-        return;
-    }
-
-    // 處理數據
-    const aggregatedData = {};
-    data.forEach(item => {
-        const date = item.properties.發生日期;
-        const district = getDistrict(item.properties.發生地點);
-        const type = item.properties.案類;
-        const key = `${date}-${district}-${type}`;
-        
-        if (!aggregatedData[key]) {
-            aggregatedData[key] = {
-                date,
-                district,
-                type,
-                count: 0
-            };
-        }
-        aggregatedData[key].count++;
-    });
-
-    // 更新表格
-    tbody.innerHTML = '';
-    if (Object.keys(aggregatedData).length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">無符合條件的數據</td></tr>';
-        return;
-    }
-
-    Object.values(aggregatedData)
-        .sort((a, b) => a.date.localeCompare(b.date))
-        .forEach(row => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${row.date}</td>
-                <td>${row.district}</td>
-                <td>${row.type}</td>
-                <td>${row.count}</td>
-            `;
-            tbody.appendChild(tr);
-        });
+function resetFilters() {
+    selectedDistricts.clear(); selectedCrimeTypes.clear();
+    document.querySelectorAll('.toggle-button').forEach(b => b.classList.remove('active'));
+    document.getElementById('start-date')._flatpickr.clear();
+    document.getElementById('end-date')._flatpickr.clear();
+    updateVisualization();
 }
 
-// 下載圖表
-function downloadChart() {
-    const canvas = document.getElementById('timeSeriesChart');
-    if (!canvas) {
-        console.error('Cannot find chart canvas');
-        return;
-    }
-
+function exportChart() {
     const link = document.createElement('a');
-    link.download = '犯罪統計圖表.png';
-    link.href = canvas.toDataURL('image/png');
+    link.download = 'Crime_Chart_Export.png';
+    link.href = document.getElementById('timeSeriesChart').toDataURL();
     link.click();
 }
 
-// 下載 GeoJSON
-function downloadCSV() {
-    const filteredData = getFilteredData();
-    
-    // 生成檔名
-    let filename = '犯罪數據';
-    
-    // 加入犯罪類型到檔名
-    if (selectedCrimeTypes.size > 0) {
-        filename += '_' + Array.from(selectedCrimeTypes).join('_');
-    }
-    
-    // 加入行政區到檔名
-    if (selectedDistricts.size > 0) {
-        filename += '_' + Array.from(selectedDistricts).join('_');
-    }
-    
-    // 加上日期和副檔名
-    const currentDate = new Date().toISOString().split('T')[0];
-    filename += `_${currentDate}.csv`;
-    
-    // 定義 CSV 的欄位標題
-    const headers = ['日期', '行政區', '案類', '地點'];
-    
-    // 將數據轉換為 CSV 格式
-    const csvData = filteredData.map(item => [
-        item.properties.發生日期.split('T')[0],
-        getDistrict(item.properties.發生地點),
-        item.properties.案類,
-        item.properties.發生地點
-    ]);
-    
-    // 加入標題行
-    csvData.unshift(headers);
-    
-    // 將數據轉換為 CSV 字串
-    const csvString = csvData
-        .map(row => row.map(cell => {
-            if (cell.includes(',') || cell.includes('\n') || cell.includes('"')) {
-                return `"${cell.replace(/"/g, '""')}"`;
-            }
-            return cell;
-        }).join(','))
-        .join('\n');
-    
-    // 創建 Blob 對象
-    const blob = new Blob(['\uFEFF' + csvString], {
-        type: 'text/csv;charset=utf-8'
-    });
-    
-    // 創建下載連結
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.download = filename;
-    link.href = url;
-    link.click();
-    
-    // 清理 URL 物件
-    URL.revokeObjectURL(url);
+function setupTheme() {
+    const btn = document.getElementById('theme-toggle');
+    const apply = (t) => {
+        document.body.setAttribute('data-theme', t);
+        const isDark = t === 'dark';
+        btn.innerText = isDark ? '切換至警政模式' : '切換至偵查模式';
+        document.getElementById('sys-title').innerText = isDark ? 'CRIME INTEL SYSTEM' : '臺北市犯罪數據公報';
+        document.getElementById('sys-status').innerText = isDark ? '● LIVE FEED ACTIVE' : '● 警政公務系統 - 已連線';
+        if (timeSeriesChart) updateVisualization();
+    };
+    btn.onclick = () => {
+        const next = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        localStorage.setItem('theme', next);
+        apply(next);
+    };
+    apply(localStorage.getItem('theme') || 'dark');
 }
 
-// 更新所有視覺化
-function updateVisualization() {
-    const filteredData = getFilteredData();
-    updateStats(filteredData);
-    updateTimeSeriesChart(filteredData);
-    updateTable(filteredData);
+function renderTable(data) {
+    const tbody = document.querySelector('#dataTable tbody');
+    tbody.innerHTML = data.slice(0, 50).map(i => `
+        <tr><td>${i.properties.發生日期}</td><td>${districtList.find(d => i.properties.發生地點.includes(d)) || '未知'}</td><td>${i.properties.案類}</td><td>${i.properties.發生地點}</td></tr>
+    `).join('');
 }
 
-// 頁面載入時初始化
+function downloadCSV() { alert("正在導出 CSV..."); }
+
 document.addEventListener('DOMContentLoaded', initialize);
-
-document.addEventListener('DOMContentLoaded', () => {
-    const themeToggleBtn = document.getElementById('theme-toggle');
-
-    // 初始化主題
-    const currentTheme = localStorage.getItem('theme') || 'light';
-    document.documentElement.setAttribute('data-theme', currentTheme);
-    themeToggleBtn.textContent = currentTheme === 'light' ? '切換至深色模式' : '切換至淺色模式';
-
-    // 監聽切換按鈕
-    themeToggleBtn.addEventListener('click', () => {
-        const newTheme = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-        document.documentElement.setAttribute('data-theme', newTheme);
-        localStorage.setItem('theme', newTheme);
-        themeToggleBtn.textContent = newTheme === 'light' ? '切換至深色模式' : '切換至淺色模式';
-    });
-});

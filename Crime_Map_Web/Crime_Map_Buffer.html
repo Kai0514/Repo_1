@@ -2,67 +2,99 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>臺北市犯罪互動分析</title>
-    <script src="https://api.mapbox.com/mapbox-gl-js/v2.11.0/mapbox-gl.js"></script>
-    <link href="https://api.mapbox.com/mapbox-gl-js/v2.11.0/mapbox-gl.css" rel="stylesheet" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>犯罪環域分析系統</title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+    
     <link href="Crime_Map_Heat.css" rel="stylesheet" />
+    <style>
+        /* 針對環域分析頁面微調，確保輸入框不超出欄位 */
+        .form-input-compact {
+            width: 100%;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: var(--card-bg);
+            color: var(--text-main);
+            box-sizing: border-box; /* 確保 padding 不會撐開寬度 */
+            margin-top: 5px;
+            outline: none;
+        }
+        .form-input-compact:focus {
+            border-color: var(--p-main);
+        }
+    </style>
 </head>
-<body class="theme-dark">
+<body data-theme="dark">
+
     <header class="header">
-        <h1>臺北市犯罪環域分析 互動地圖</h1>
+        <div class="header-left">
+            <button id="mobile-toggle" class="mobile-toggle-btn">☰ 系統選單</button>
+            <h1>環域空間分析模式</h1>
+        </div>
+        <button id="theme-toggle" class="action-button primary">切換警政模式</button>
     </header>
+
     <div class="content-container">
-        <div class="sidebar">
-            <div id="analysis-form" class="control-group">
-                <h3>環域分析</h3>
-                
-                <div class="control-group">
-                    <label for="input-year">年份:</label>
-                    <input type="number" id="input-year" min="2014" max="2023" value="2023" class="form-input">
-                </div>
-                
-                <div class="control-group">
-                    <label for="input-lat">緯度:</label>
-                    <input type="number" id="input-lat" step="0.0001" value="25.0330" class="form-input">
-                </div>
-                
-                <div class="control-group">
-                    <label for="input-lng">經度:</label>
-                    <input type="number" id="input-lng" step="0.0001" value="121.5654" class="form-input">
-                </div>
-                
-                <div class="control-group">
-                    <label for="input-radius">半徑 (公尺):</label>
-                    <input type="number" id="input-radius" min="100" max="5000" value="500" class="form-input">
-                </div>
-                
-                <button id="analyze-button" class="nav-button">開始分析</button>
+        <div class="sidebar" id="sidebar">
+            <div class="section">
+                <div id="crime-count" class="stat-value">---</div>
+                <div style="text-align:center; font-size: 0.8rem; opacity: 0.8;">範圍內偵測案件</div>
             </div>
             
-            <div id="analysis-result" class="control-group">
-                <h3>分析結果</h3>
-                <div id="result-content">
-                    尚未進行分析
+            <div class="section" id="analysis-form">
+                <div class="control-group">
+                    <label>分析年份</label>
+                    <input type="number" id="input-year" min="2014" max="2023" value="2023" class="form-input-compact">
+                </div>
+                
+                <div class="control-group">
+                    <label>目標緯度 (Lat)</label>
+                    <input type="number" id="input-lat" step="0.0001" value="25.0330" class="form-input-compact">
+                </div>
+                
+                <div class="control-group">
+                    <label>目標經度 (Lng)</label>
+                    <input type="number" id="input-lng" step="0.0001" value="121.5654" class="form-input-compact">
+                </div>
+                
+                <div class="control-group">
+                    <label>搜尋半徑 (公尺): <span id="radius-val">500</span></label>
+                    <input type="range" id="input-radius" min="100" max="3000" step="100" value="500" style="width: 100%;">
+                </div>
+                
+                <button id="analyze-button" class="action-button primary" style="width: 100%; margin-top: 10px; height: 40px;">啟動環域掃描</button>
+            </div>
+
+            <div class="section" id="analysis-result">
+                <label>分析報告</label>
+                <div id="result-content" style="font-size: 0.85rem; line-height: 1.5; margin-top: 10px; word-break: break-all;">
+                    請於地圖點選位置或點擊按鈕開始。
                 </div>
             </div>
 
-            <button id="nav-button" onclick="window.location.href='https://kai0514.github.io/Repo_1/Crime_Map_Web/Crime_Map_Heat.html'">
-                <span class="icon">←</span>
-                返回首頁
-            </button>
-            
+            <div class="button-group">
+                <button class="toggle-button" onclick="window.location.href='https://kai0514.github.io/Repo_1/Crime_Map_Web/Crime_Map_Heat.html'">熱度模式</button>
+                <button class="toggle-button" onclick="window.location.href='https://kai0514.github.io/Repo_1/Crime_Map_Web/Crime_Map_Analysis.html'">統計面板</button>
+            </div>  
         </div>
+
         <div class="map-container">
-            <div id="map">
-                <div id="theme-toggle-container">
-                    <button id="theme-toggle" class="theme-button">切換淺色主題</button>
+            <div id="map"></div>
+            <div id="legend" class="map-legend">
+                <div class="legend-title">案件嚴重程度</div>
+                <div class="legend-gradient" style="background: linear-gradient(to right, #ff0000, #800080);"></div>
+                <div class="legend-scale">
+                    <span>單一事件</span>
+                    <span>熱點群聚</span>
                 </div>
-                <div id="legend" class="map-legend"></div>
             </div>
         </div>
     </div>
+    
     <script src="Crime_Map_Buffer.js"></script>
 </body>
 </html>
